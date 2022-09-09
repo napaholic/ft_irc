@@ -41,4 +41,4 @@ add_executable(ft_irc
         webserv/client.cpp
         webserv/server.cpp
         select.cpp
-        test.cpp)
+        test.cpp jay_irc/src/main.cpp jay_irc/inc/main.h)
