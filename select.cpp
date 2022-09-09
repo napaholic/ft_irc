@@ -60,8 +60,7 @@ int main(int argc, char **argv)
 	server_addr.sin_port = htons(PORTNUM);
 	
 	if(bind(listen_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
-	{
-		perror("bind error");
+	{perror("bind error");
 		return 1;
 	}   
 	if(listen(listen_fd, 5) == -1)
