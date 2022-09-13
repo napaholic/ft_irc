@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="ft_irc"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/goinfre/jaewkim/ft_irc/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ft_irc">
+				<Option output="/goinfre/jaewkim/ft_irc/cmake-build-debug/ft_irc" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/goinfre/jaewkim/ft_irc/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc"/>
+					<Add directory="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 ft_irc"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ft_irc/fast">
+				<Option output="/goinfre/jaewkim/ft_irc/cmake-build-debug/ft_irc" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/goinfre/jaewkim/ft_irc/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc"/>
+					<Add directory="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 ft_irc/fast"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/goinfre/jaewkim/ft_irc/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/goinfre/jaewkim/ft_irc/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/goinfre/jaewkim/ft_irc/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/goinfre/jaewkim/ft_irc/jay_irc/inc/main.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/jay_irc/src/main.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/Channel.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/Client.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/Message.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/Server.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/ft_irc.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/inc/reply.hpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/Channel.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/Client.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/Message.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/Server.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/commands.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/libft.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/main.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/ssl.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/IRC_server/src/utils.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/channel.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/channel.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/config.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/config.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/defines.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/main.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/mainframe.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/mainframe.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/parser.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/parser.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/server.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/server.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/session.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/session.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/user.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/ref_git/simple-irc-server/user.h">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/select.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/test.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/webserv/client.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/webserv/server.cpp">
+			<Option target="ft_irc"/>
+		</Unit>
+		<Unit filename="/goinfre/jaewkim/ft_irc/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

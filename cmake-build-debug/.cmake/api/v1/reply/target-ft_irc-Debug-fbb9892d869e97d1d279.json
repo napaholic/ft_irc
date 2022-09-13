@@ -382,7 +382,7 @@
 		},
 		{
 			"backtrace" : 1,
-			"path" : "jay_irc/src/main.h",
+			"path" : "jay_irc/inc/main.h",
 			"sourceGroupIndex" : 0
 		}
 	],
