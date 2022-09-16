@@ -15,6 +15,7 @@
 Server::Server(const std::string &port, const std::string &password)
 	: __port(port), __password(password) 
 {
+    //port chk 함수 호출.
 	// fcntl(STDOUT_FILENO, F_SETFL, O_NONBLOCK);
 	// fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 	create_socket();
@@ -109,6 +110,8 @@ void Server::receive_message(int fd) {
 
 	if (size == 0)
 		disconnect_client(fd);
+    //jaewkim : 지금은 종료되버림
+    //수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
 	else if (size == -1)
 		throw std::runtime_error("recv returned -1");
 }
