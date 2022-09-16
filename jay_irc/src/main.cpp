@@ -4,8 +4,18 @@
 
 #include "../inc/main.h"
 
-
 int main(int argc, char **argv)
 {
-
+    try
+    {
+        if (argc != 3)
+            throw std::invalid_argument("please ./ircserv port password");
+        
+        Server server(argv[1], argv[2]);
+        server.run();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 }
