@@ -1,3 +1,0 @@
-/goinfre/jaewkim/ft_irc/cmake-build-debug/CMakeFiles/ft_irc.dir
-/goinfre/jaewkim/ft_irc/cmake-build-debug/CMakeFiles/edit_cache.dir
-/goinfre/jaewkim/ft_irc/cmake-build-debug/CMakeFiles/rebuild_cache.dir
