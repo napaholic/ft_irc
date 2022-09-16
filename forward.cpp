@@ -50,6 +50,18 @@ int main(int argc, char **argv)
 
 	// binding
     int optval = 1;
+    for (struct addrinfo *p = ai; p != NULL; p = p->ai_next)
+    {
+        printf("this cannon name is :%s\n", p->ai_canonname);
+        printf("this cannon name is :%d\n", p->ai_family);
+        printf("this cannon name is :%d\n", p->ai_socktype);
+        printf("this cannon name is :%d\n", p->ai_addr->sa_family);
+        printf("this cannon name is :%s\n", p->ai_addr->sa_data);
+        printf("this cannon name is :%d\n", p->ai_protocol);
+        printf("===============================================\n");
+    }
+    
+    
 	for (struct addrinfo *p = ai; p != NULL; p = p->ai_next)
 	{
 		listen_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
@@ -62,6 +74,7 @@ int main(int argc, char **argv)
             close(listen_fd);
             continue;
         }
+        printf("maxfd is : %d\n", listen_fd);
         break;
 	}
 	
@@ -77,6 +90,7 @@ int main(int argc, char **argv)
 	FD_SET(listen_fd, &allfds);
 
 	maxfd = listen_fd;
+    printf("maxfd is : %d\n", maxfd);
 	while(1)
 	{
 		// non-blocking
@@ -86,7 +100,7 @@ int main(int argc, char **argv)
         readfds = allfds;
 	    if (select(maxfd + 1, &readfds, STDIN_FILENO, NULL, &timeout) == -1)
 		    perror("Could not call select.");
-
+        printf("secon select maxfd is : %d\n", maxfd);
         for (int i = 0; i <= maxfd; i++)
         {
             if (FD_ISSET(i, &readfds))
