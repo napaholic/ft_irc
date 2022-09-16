@@ -6,7 +6,7 @@
 /*   By: hynam <hynam@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/15 18:47:09 by hynam             #+#    #+#             */
-/*   Updated: 2022/09/16 12:37:50 by hynam            ###   ########.fr       */
+/*   Updated: 2022/09/16 15:57:01 by hynam            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 Server::Server(const std::string &port, const std::string &password)
 	: __port(port), __password(password) 
 {
-    //port chk 함수 호출.
+    check_port(port);
 	// fcntl(STDOUT_FILENO, F_SETFL, O_NONBLOCK);
 	// fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 	create_socket();
@@ -27,7 +27,13 @@ Server::~Server() {
 	delete __clients;
 }
 
-void Server::run() {
+void	Server::check_port(const std::string &port) {
+	int port_num = std::atoi(port.c_str());
+	if (port_num < 1024 || port_num > 49151)
+		throw std::runtime_error("port number must be from 1024 to 49151");
+}
+
+void	Server::run() {
 	while (1)
 	{
 		select_socket();
@@ -46,7 +52,7 @@ void Server::run() {
 	}
 }
 
-void Server::create_socket() {
+void	Server::create_socket() {
 	__fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (__fd == -1)
 		throw std::runtime_error("Cannot open socket");
@@ -58,7 +64,7 @@ void Server::create_socket() {
 	memset(&__addr, 0, sizeof(__addr));
 	this->__addr.sin_family = AF_UNSPEC;
 	this->__addr.sin_addr.s_addr = INADDR_ANY;
-	this->__addr.sin_port = htons(std::stoi(__port));
+	this->__addr.sin_port = htons(std::atoi(__port.c_str()));
 	
 	if (bind(__fd, (struct sockaddr *)&__addr, sizeof(__addr)) == -1)
 		throw std::runtime_error("Cannot bind server socket");
@@ -72,7 +78,7 @@ void Server::create_socket() {
 	__fd_max = __fd;
 }
 
-void Server::select_socket() {
+void	Server::select_socket() {
 	struct timeval timeout;
 	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
@@ -82,7 +88,7 @@ void Server::select_socket() {
 		throw std::runtime_error("select error");
 }
 
-void Server::accept_client() {
+void	Server::accept_client() {
 	int	client_fd;
 	struct sockaddr_in	client_addr;
 	socklen_t	addrlen = sizeof(struct sockaddr_in);
@@ -101,7 +107,7 @@ void Server::accept_client() {
 	 */
 }
 
-void Server::receive_message(int fd) {
+void	Server::receive_message(int fd) {
 	ssize_t size;
 	char buf[512];
 	
@@ -116,7 +122,7 @@ void Server::receive_message(int fd) {
 		throw std::runtime_error("recv returned -1");
 }
 
-void Server::disconnect_client(int fd) {
+void	Server::disconnect_client(int fd) {
 	std::cout << "disconnect" << std::endl;
 	close(fd);
 	FD_CLR(fd, &__all);

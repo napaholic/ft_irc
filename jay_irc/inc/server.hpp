@@ -6,7 +6,7 @@
 /*   By: hynam <hynam@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/15 18:37:56 by hynam             #+#    #+#             */
-/*   Updated: 2022/09/16 12:38:14 by hynam            ###   ########.fr       */
+/*   Updated: 2022/09/16 15:53:19 by hynam            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <fcntl.h>
 
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -39,24 +40,25 @@ class Server {
 public:
     // Server();
     explicit Server(const std::string &port, const std::string &password);
-    void run();
-	void create_socket();
-	void select_socket();
-	void accept_client();
-	void receive_message(int fd);
-	void disconnect_client(int fd);
+    void    check_port(const std::string &port);
+    void    run();
+	void    create_socket();
+	void    select_socket();
+	void    accept_client();
+	void    receive_message(int fd);
+	void    disconnect_client(int fd);
     ~Server();
 private:
-    const std::string __port;
-    const std::string __password;
+    const std::string   __port;
+    const std::string   __password;
     std::vector<Client> *__clients;
-    std::map<std::string, Channel> *__channels;
+    std::map<std::string, Channel>  *__channels;
 
-    fd_set __all;
-    fd_set __reads;
-    int __fd;
-    int __fd_max;
-    struct sockaddr_in __addr;
+    fd_set  __all;
+    fd_set  __reads;
+    int     __fd;
+    int     __fd_max;
+    struct sockaddr_in  __addr;
 };
 
 #endif
