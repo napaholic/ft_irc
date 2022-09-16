@@ -6,7 +6,7 @@
 /*   By: hynam <hynam@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/15 18:47:09 by hynam             #+#    #+#             */
-/*   Updated: 2022/09/16 15:57:01 by hynam            ###   ########.fr       */
+/*   Updated: 2022/09/16 16:25:22 by hynam            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,12 +114,13 @@ void	Server::receive_message(int fd) {
 	while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR);
 	buf[size] = '\0';
 
-	if (size == 0)
+	if (size <= 0)
+	{
+		if (size == -1 && errno & (EAGAIN | EWOULDBLOCK | EINTR))
+			return;
 		disconnect_client(fd);
-    //jaewkim : 지금은 종료되버림
+	}
     //수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
-	else if (size == -1)
-		throw std::runtime_error("recv returned -1");
 }
 
 void	Server::disconnect_client(int fd) {
