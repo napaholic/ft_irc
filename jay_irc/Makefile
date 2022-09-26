@@ -9,7 +9,7 @@ INC_DIR		=	./inc
 OBJ_DIR		=	./obj
 
 INCS		=	$(wildcard $(INC_DIR)/*.hpp)
-SRCS		=	$(SRC_DIR)/main.cpp $(SRC_DIR)/server.cpp
+SRCS		=	$(SRC_DIR)/main.cpp $(SRC_DIR)/session.cpp $(SRC_DIR)/server.cpp
 OBJS		=	$(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.cpp=.o)))
 
 vpath %.cpp $(SRC_DIR) $(INC_DIR)

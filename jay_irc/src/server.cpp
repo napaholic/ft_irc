@@ -9,8 +9,15 @@ Server::Server(const std::string &port, const std::string &password)
 	__port_int = std::atoi(port.c_str());
 }
 
-void Server::run() {
-
+void Server::run(Session &session) {
+	for (int i = 0; i < session.__fd_max + 1; i++)
+	{
+		if (FD_ISSET(i, &session.__reads) == 0) continue;
+		if (i == session.__fd)
+			accept_client(session);
+		else
+			receive_message(session, i);
+	}
 }
 
 void Server::accept_client(Session &session) {
@@ -28,16 +35,42 @@ void Server::accept_client(Session &session) {
 		session.__fd_max = client_fd;
 }
 
+void Server::receive_message(Session &session, int fd) {
+	ssize_t size;
+	char buf[512];
 
+	while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR);
+	buf[size] = '\0';
 
-void Server::receive_message(int fd) {}//좀 정의해야됨
+	if (size <= 0)
+	{
+		if (size == -1 && errno & (EAGAIN | EWOULDBLOCK | EINTR))
+			return;
+		disconnect_client(session, fd);
+	}
+	else
+		broad_cast(session, buf, fd);
+	//수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
+}
 
 void Server::disconnect_client(Session &session, int fd) {//jaewkim 알아올게
 	close(fd);
 	FD_CLR(fd, &session.__all);
 }
 
-void Server::send_message(int fd) {} //좀 정의해야됨
+void Server::send_message(int fd, char *buf) {
+	if (send(fd, buf, strlen(buf), 0) == -1)
+		return ;
+} //좀 정의해야됨
+
+void Server::broad_cast(Session &session, char *buf, int fd)
+{
+	for (int i = session.__fd + 1; i <= session.__fd_max; i++)
+	{
+		if (i != fd)
+			send_message(i, buf);
+	}
+}
 
 Server::~Server() {
 	delete __channels;
