@@ -22,11 +22,12 @@ class Session;
 class Server {
 public:
 	Server(const std::string &port, const std::string &password);
-	void	run();
+	void	run(Session &session);
 	void 	accept_client(Session &session);
-	void	receive_message(int fd);
+	void	receive_message(Session &session, int fd);
 	void	disconnect_client(Session &session, int fd);
-	void	send_message(int fd);
+	void	send_message(int fd, char *buf);
+	void	broad_cast(Session &session, char *buf, int fd);
 	~Server();
 	
 private:
@@ -35,7 +36,6 @@ private:
 	int					__port_int;
 	std::map<int, Channel> *__channels;
 	std::vector<Client> *__clients;
-	
 };
 
 
