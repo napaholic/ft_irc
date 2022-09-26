@@ -3,6 +3,7 @@
 //
 
 #include "../inc/server.hpp"
+#include <sstream>
 
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
@@ -35,6 +36,24 @@ void Server::accept_client(Session &session) {
 		session.__fd_max = client_fd;
 }
 
+std::pair< std::string, std::vector<std::string> > parsing(char *buf)
+{
+	std::string s;
+	std::string prefix;
+	std::stringstream ss((std::string(buf)));
+	std::vector<std::string> ret;
+	
+	while (ss >> s)
+		ret.push_back(s);
+	
+	if (ret[0][0] == ':')
+	{
+		prefix = ret[0].substr(1, ret.size());
+		ret.erase(ret.begin());
+	}
+	return std::make_pair(prefix, ret);
+}
+
 void Server::receive_message(Session &session, int fd) {
 	ssize_t size;
 	char buf[512];
@@ -49,6 +68,7 @@ void Server::receive_message(Session &session, int fd) {
 		disconnect_client(session, fd);
 	}
 	else
+	{
 		broad_cast(session, buf, fd);
 	//수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
 }
