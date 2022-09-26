@@ -3,6 +3,7 @@
 //
 
 #include "../inc/server.hpp"
+#include <sstream>
 
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
@@ -35,6 +36,24 @@ void Server::accept_client(Session &session) {
 	FD_SET(client_fd, &session.__all);
 	if (client_fd > session.__fd_max)
 		session.__fd_max = client_fd;
+}
+
+std::pair< std::string, std::vector<std::string> > parsing(char *buf)
+{
+	std::string s;
+	std::string prefix;
+	std::stringstream ss((std::string(buf)));
+	std::vector<std::string> ret;
+	
+	while (ss >> s)
+		ret.push_back(s);
+	
+	if (ret[0][0] == ':')
+	{
+		prefix = ret[0].substr(1, ret.size());
+		ret.erase(ret.begin());
+	}
+	return std::make_pair(prefix, ret);
 }
 
 void Server::receive_message(Session &session, int fd) {
