@@ -9,7 +9,7 @@ Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
 	__port_int = std::atoi(port.c_str());
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
-    map<long long, class::method>
+    // map<long long, class::method>
 }
 
 void Server::run(Session &session) {
@@ -38,7 +38,7 @@ void Server::accept_client(Session &session) {
 		session.__fd_max = client_fd;
 }
 
-std::pair< std::string, std::vector<std::string> > parsing(char *buf)
+std::pair< std::string, std::vector<std::string> > Server::parsing(char *buf)
 {
 	std::string s;
 	std::string prefix;
@@ -58,9 +58,9 @@ std::pair< std::string, std::vector<std::string> > parsing(char *buf)
 
 void Server::receive_message(Session &session, int fd) {
 	ssize_t size;
-	char buf[512];
-    map<string, int> a;
-    a["KICK"]
+	char buf[510];
+    // map<string, int> a;
+    // a["KICK"]
 
 	while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR);
 	buf[size] = '\0';

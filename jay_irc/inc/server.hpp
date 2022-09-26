@@ -27,6 +27,7 @@ public:
 	void	receive_message(Session &session, int fd);
 	void	disconnect_client(Session &session, int fd);
 	void	send_message(int fd, char *buf);
+	std::pair< std::string, std::vector<std::string> >	parsing(char *buf);
 	void	broad_cast(Session &session, char *buf, int fd);
 	~Server();
 	
