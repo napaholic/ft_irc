@@ -3,13 +3,12 @@
 //
 
 #include "../inc/server.hpp"
-#include <sstream>
 
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
 	__port_int = std::atoi(port.c_str());
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
-    map<long long, class::method>
+    // map<long long, class::method>
 }
 
 void Server::run(Session &session) {
@@ -38,29 +37,11 @@ void Server::accept_client(Session &session) {
 		session.__fd_max = client_fd;
 }
 
-std::pair< std::string, std::vector<std::string> > parsing(char *buf)
-{
-	std::string s;
-	std::string prefix;
-	std::stringstream ss((std::string(buf)));
-	std::vector<std::string> ret;
-	
-	while (ss >> s)
-		ret.push_back(s);
-	
-	if (ret[0][0] == ':')
-	{
-		prefix = ret[0].substr(1, ret.size());
-		ret.erase(ret.begin());
-	}
-	return std::make_pair(prefix, ret);
-}
-
 void Server::receive_message(Session &session, int fd) {
 	ssize_t size;
-	char buf[512];
-    map<string, int> a;
-    a["KICK"]
+	char buf[510];
+    // map<string, int> a;
+    // a["KICK"]
 
 	while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR);
 	buf[size] = '\0';
@@ -72,7 +53,10 @@ void Server::receive_message(Session &session, int fd) {
 		disconnect_client(session, fd);
 	}
 	else//커맨드에 따른 동작수행
+	{
+		Message msg(fd, buf);
 		broad_cast(session, buf, fd);
+	}
     /*
      * * 1. 파싱
      *      1-2. 오류체크 커맨드, 프리픽스, 이상 체크 패러미터는 string 으로 넘긴다.

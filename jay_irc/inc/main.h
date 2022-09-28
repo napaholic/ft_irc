@@ -22,8 +22,10 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
 
 #include "./session.hpp"
 #include "./server.hpp"
+#include "./message.hpp"
 
 #endif //FT_IRC_MAIN_H
