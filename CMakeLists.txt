@@ -40,5 +40,7 @@ add_executable(ft_irc
         ref_git/simple-irc-server/user.h
         webserv/client.cpp
         webserv/server.cpp
+        jay_irc/inc/channel.hpp
+        jay_irc/src/channel.cpp
         select.cpp
         test.cpp jay_irc/src/main.cpp jay_irc/inc/main.h)
