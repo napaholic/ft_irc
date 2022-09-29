@@ -26,6 +26,7 @@
 
 #include "./session.hpp"
 #include "./server.hpp"
+#include "./channel.hpp"
 #include "./message.hpp"
 
 #endif //FT_IRC_MAIN_H
