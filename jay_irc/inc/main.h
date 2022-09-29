@@ -28,5 +28,6 @@
 #include "./server.hpp"
 #include "./channel.hpp"
 #include "./message.hpp"
+#include "./util.hpp"
 
 #endif //FT_IRC_MAIN_H
