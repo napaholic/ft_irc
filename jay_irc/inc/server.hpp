@@ -35,6 +35,7 @@ private:
 	const std::string	__password;
 	int					__port_int;
 	std::map<int, Channel> *__channels;
+    std::map<unsigned long long, void(*)(Message &)> __cmd_list;
 	std::vector<Client> *__clients;
 };
 

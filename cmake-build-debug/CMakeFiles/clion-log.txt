@@ -1,4 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" -S /Users/mjay/goinfre/ft_irc -B /Users/mjay/goinfre/ft_irc/cmake-build-debug
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" -S /Users/mjay/test/ft_irc -B /Users/mjay/test/ft_irc/cmake-build-debug
 CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
   CMake 3.23 or higher is required.  You are running version 3.22.3
 

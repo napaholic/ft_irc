@@ -12,7 +12,7 @@ Message::Message(int fd, char *buf): __fd(fd) {
 		__prefix = __parameters[0].substr(1, __parameters.size());
 		__parameters.erase(__parameters.begin());
 	}
-    __command = *__parameters.begin();
+    __command = djb2(*__parameters.begin());
     __parameters.erase(__parameters.begin());
 }
 

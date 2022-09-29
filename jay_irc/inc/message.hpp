@@ -11,7 +11,7 @@ public:
 private:
     std::string __prefix;
     std::vector<std::string>    __parameters;
-    std::string __command;
+    unsigned long long __command;
     int __fd;
 };
 
