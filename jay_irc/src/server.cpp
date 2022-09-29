@@ -35,6 +35,7 @@ void Server::accept_client(Session &session) {
 	FD_SET(client_fd, &session.__all);
 	if (client_fd > session.__fd_max)
 		session.__fd_max = client_fd;
+    //client 생성
 }
 
 void Server::receive_message(Session &session, int fd) {
@@ -55,7 +56,15 @@ void Server::receive_message(Session &session, int fd) {
 	else//커맨드에 따른 동작수행
 	{
 		Message msg(fd, buf);
-		broad_cast(session, buf, fd);
+		//broad_cast(session, buf, fd);
+        if (__cmd_list.find(msg.__command) != __cmd_list.end())
+        {
+            (this->*(*__cmd_list).second)(msg);
+        }
+        else
+        {
+            //responses
+        }
 	}
     /*
      * * 1. 파싱
