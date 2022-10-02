@@ -1,47 +1,33 @@
 #ifndef RESPONSES_HPP
 # define RESPONSES_HPP
 
-#define RPL_LIST                "322" // "<channel> <# visible> :<topic>"
-#define RPL_LISTEND             "323" // ":End of LIST"
-#define RPL_CHANNELMODEIS       "324" // "<channel> <mode> <mode params>"
-#define RPL_UNIQOPIS            "325" // "<channel> <nickname>"
+#define RPL_WELCOME(nick) ("Welcome to the Internet Relay Network" + nick + "\r\n")                                 // 001
+#define RPL_UMODEIS(user_mode) (user_mode + "\r\n")                                                                 // 221
+#define RPL_UNIQOPIS(channel, nick) (channel + " " + nick + "\r\n")                                                 // 325
+#define RPL_NOTOPIC(channel) (channel + " :No topic is set\r\n")                                                    // 331
+#define RPL_TOPIC(channel, topic) (channel + " :" + topic + "\r\n")                                                 // 332
+#define RPL_INVITING(channel, nick) (channel + " " + nick + "\r\n")                                                 // 341
+#define RPL_YOUREOPER "You are now an IRC operator\r\n"                                                             // 381
 
-#define RPL_NOTOPIC             "331" // "<channel> :No topic is set"
-#define RPL_TOPIC               "332" // "<channel> :<topic>"
-#define RPL_INVITELIST          "346" // "<channel> <invitemask>"
-#define RPL_ENDOFINVITELIST     "347" // "<channel> :End of channel invite list"
-#define RPL_EXCEPTLIST          "348" // "<channel> <exceptionmask>"
-#define RPL_ENDOFEXCEPTLIST     "349" // "<channel> :End of channel exception list"
-#define RPL_NAMREPLY            "353" //"( "=" / "*" / "@" ) <channel> :[ "@" / "+" ] <nick> *( " " [ "@" / "+" ] <nick> )"
-
-#define RPL_ENDOFNAMES          "366" // "<channel> :End of NAMES list"
-#define RPL_BANLIST             "367" // "<channel> <banmask>"
-#define RPL_ENDOFBANLIST        "368" // "<channel> :End of channel ban list"
-
-#define ERR_NOSUCHNICK          "401" // "<nickname> :No such nick/channel"
-#define ERR_NOSUCHSERVER        "402" // "<server name> :No such server"
-#define ERR_NOSUCHCHANNEL       "403" // "<channel name> :No such channel"
-#define ERR_TOOMANYCHANNELS     "405" // "<channel name> :You have joined too many channels"
-#define ERR_TOOMANYTARGETS      "407" // "<target> :<error code> recipients. <abort message>"
-#define ERR_NONICKNAMEGIVEN     "431" // ":No nickname given"
-#define ERR_ERRONEUSNICKNAME    "432" // "<nick> :Erroneous nickname"
-#define ERR_NICKNAMEINUSE       "433" // "<nick> :Nickname is already in use"
-#define ERR_NICKCOLLISION       "436" // "<nick> :Nickname collision KILL from <user>@<host>"
-#define ERR_UNAVAILRESOURCE     "437" // "<nick/channel> :Nick/channel is temporarily unavailable"
-#define ERR_USERNOTINCHANNEL    "441" // "<nick> <channel> :They aren't on that channel"
-#define ERR_NOTONCHANNEL        "442" // "<channel> :You're not on that channel"
-#define ERR_RESTRICTED          "484" // ":Your connection is restricted!"
-#define ERR_NEEDMOREPARAMS      "461" // "<command> :Not enough parameters"
-#define ERR_ALREADYREGISTRED    "462" // ":Unauthorized command (already registered)"
-#define ERR_KEYSET              "467" // "<channel> :Channel key already set"
-#define ERR_CHANNELISFULL       "471" // "<channel> :Cannot join channel (+l)"
-#define ERR_UNKNOWNMODE         "472" // "<char> :is unknown mode char to me for <channel>"
-#define ERR_INVITEONLYCHAN      "473" // "<channel> :Cannot join channel (+i)"
-#define ERR_BANNEDFROMCHAN      "474" // "<channel> :Cannot join channel (+b)"
-#define ERR_BADCHANNELKEY       "475" // "<channel> :Cannot join channel (+k)"
-#define ERR_BADCHANMASK         "476" // "<channel> :Bad Channel Mask"
-#define ERR_NOCHANMODES         "477" // "<channel> :Channel doesn't support modes"
-#define ERR_CHANOPRIVSNEEDED    "482" // "<channel> :You're not channel operator"
-#define ERR_UMODEUNKNOWNFLAG    "501" // ":Unknown MODE flag"
-#define ERR_USERSDONTMATCH      "502" // ":Cannot change mode for other users"
+#define ERR_NOSUCHNICK(nick) (nick + " :No such nick\r\n")                                                          // 401
+#define ERR_NOSUCHCHANNEL(channel) (channel + " :No such channel\r\n")                                              // 403
+#define ERR_CANNOTSENDTOCHAN(channel) (channel + " :Cannot send to channel\r\n")                                    // 404
+#define ERR_NORECIPIENT(command) ("No recipient given " + command + "\r\n")                                         // 411
+#define ERR_NOTEXTTOSEND "No text to send\r\n"                                                                      // 412
+#define ERR_NONICKNAMEGIVEN "No nickname given\r\n"                                                                 // 431
+#define ERR_ERRONEUSNICKNAME(nick) (nick + " :Erroneous nickname\r\n")                                              // 432
+#define ERR_NICKNAMEINUSE(nick) (nick + " :Nickname is already in use\r\n")                                         // 433
+#define ERR_NICKCOLLISION(nick, user, host) (nick + " :Nickname collision KILL from " + user + "@" + host + "\r\n") // 436
+#define ERR_UNAVAILRESOURCE(resource) (resource + " :Nick/channel is temporarily unavailable\r\n")                  // 437
+#define ERR_USERNOTINCHANNEL(nick, channel) (nick + " " + channel + " :They aren't on that channel\r\n")            // 441
+#define ERR_NOTONCHANNEL(channel) (channel + " :You're not on that channel\r\n")                                    // 442
+#define ERR_USERONCHANNEL(user, channel) (user + " " + channel + " :is already on channel\r\n")                     // 443
+#define ERR_NEEDMOREPARAMS(command) (command + " :Not enough parameters\r\n")                                       // 461
+#define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\r\n"                                        // 462
+#define ERR_PASSWDMISMATCH "Password incorrect\r\n"                                                                 // 464
+#define ERR_BADCHANMASK(channel) (channel + " :Bad Channel Mask\r\n")                                               // 476
+#define ERR_CHANOPRIVSNEEDED(channel) (channel + " :You're not channel operator\r\n")                               // 482
+#define ERR_RESTRICTED "Your connection is restricted!\r\n"                                                         // 484
+#define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag\r\n"                                                                // 501 
+#define ERR_USERSDONTMATCH "Cannot change mode for other users\r\n"                                                 // 502
 #endif
