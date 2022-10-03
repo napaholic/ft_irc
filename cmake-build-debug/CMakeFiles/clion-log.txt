@@ -1,13 +1,9 @@
 /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" -S /Users/yubae/practice/ft_irc -B /Users/yubae/practice/ft_irc/cmake-build-debug
--- Configuring done
-CMake Error at CMakeLists.txt:9 (add_executable):
-  Cannot find source file:
-
-    ref_git/simple-irc-server/channel.cpp
-
-
-CMake Error at CMakeLists.txt:9 (add_executable):
-  No SOURCES given to target: ft_irc
-
-
-CMake Generate step failed.  Build files cannot be regenerated correctly.
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 2. Offending entry: <<<<<<< HEAD
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 6. Offending entry: >>>>>>> origin/main
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 247. Offending entry: <<<<<<< HEAD
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 251. Offending entry: >>>>>>> origin/main
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 326. Offending entry: <<<<<<< HEAD
+CMake Error: Parse error in cache file /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt on line 348. Offending entry: >>>>>>> origin/main
+CMake Error: The current CMakeCache.txt directory /Users/yubae/practice/ft_irc/cmake-build-debug/CMakeCache.txt is different than the directory /Users/mjay/test/ft_irc/cmake-build-debug where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
+CMake Error: The source "/Users/yubae/practice/ft_irc/CMakeLists.txt" does not match the source "/Users/mjay/test/ft_irc/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
