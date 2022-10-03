@@ -21,7 +21,6 @@ class Channel
     std::vector<std::string> __banned;
     unsigned char __mode;
     std::string __key;
-    bool local;
     
     Channel();
     Channel	&operator=(const Channel &rhs);
