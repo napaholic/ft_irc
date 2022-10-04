@@ -9,6 +9,8 @@ Client::Client(int socket, struct sockaddr_in client_addr)
     :__socket(socket), __client_addr(client_addr)
 {
     memset(buf, 0, sizeof(buf));
+    __nickname = 0;
+    __servername = "ft_irc@42seoul.com";
     std::cout << "Unknown client" << socket << "created.\n";
 }
 

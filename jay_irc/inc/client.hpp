@@ -27,6 +27,8 @@ private:
     std::string __realname;
 
     std::string __prefix;
+    
+    std::string __type;
 
     char buf[512];
 
