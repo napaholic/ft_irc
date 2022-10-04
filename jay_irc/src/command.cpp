@@ -20,3 +20,21 @@ void Server::pass(Message &msg)
             send_message(msg.socket, "NOTICE :Incorrect password.");
     }
 }
+
+void Server::nick(Message &msg)
+{//msg.orig는 클라이언트의 주소를 의미. 우리 계정은 fd로 관리하나?
+    if (msg.orig->type == "accepted")
+        new_nick(msg);
+    else if (msg.orig->type == "client")
+        re_nick(msg);
+    else if (msg.orig->type == "server")
+        new_nick(msg);
+    else if (msg.orig->type == "preserver")
+    {
+        new_nick(msg);
+        msg.orig->type = "server";
+        sendmsg(msg.orig->socket, std::string("NICK ").append(port));
+        sendusers(msg);
+        sendchannels(msg);
+    }
+}
