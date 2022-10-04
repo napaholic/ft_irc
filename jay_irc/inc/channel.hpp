@@ -17,6 +17,7 @@ class Channel
   private:
     std::string __name;
     std::string __topic;
+    std::list __operator_list;
     std::map<std::string, unsigned char> __nicks;
     std::vector<std::string> __banned;
     unsigned char __mode;
