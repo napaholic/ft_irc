@@ -3,7 +3,12 @@
 
 #include "main.h"
 
+class Client;
+
 class Message {
+    
+    friend class Server;
+    
 public:
     Message(int fd, char *buf);
     ~Message();
@@ -13,6 +18,7 @@ private:
     std::vector<std::string>    __parameters;
     unsigned long long __command;
     int __fd;
+    Client *__client;
 };
 
 #endif

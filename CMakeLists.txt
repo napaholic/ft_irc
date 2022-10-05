@@ -43,4 +43,4 @@ add_executable(ft_irc
         jay_irc/inc/channel.hpp
         jay_irc/src/channel.cpp
         select.cpp
-        test.cpp jay_irc/src/main.cpp jay_irc/inc/main.h)
+        test.cpp jay_irc/src/main.cpp jay_irc/inc/main.h jay_irc/src/command.cpp)
