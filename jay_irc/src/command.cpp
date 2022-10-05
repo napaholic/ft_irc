@@ -14,7 +14,7 @@ void Server::pass(Message &msg)
         {
             print("Password accepted");
             send_message(msg.__client->__socket, "NOTICE :Password accepted.");
-            //getClient(msg.socket)->type = "accepted";
+            getClient(msg.__client)->__allowed = ALLOW;
         }
         else
             send_message(msg.__fd, "NOTICE :Incorrect password.");
@@ -22,16 +22,58 @@ void Server::pass(Message &msg)
     }
 }
 
+Client *Server::getClient(std::string nick)
+{
+    std::vector<Client*>::iterator it = __clients.begin();
+    while (it != __clients.end())
+    {
+        if ((*it)->__nickname == nick)
+            return *it;
+        ++it;
+    }
+    return NULL;
+}
+
 void Server::new_nick(Message &msg)
 {
     if (msg.__parameters.size() < 1)
         return ERR_NEEDMOREPARAMS(NICK);
+    if (getClient(*msg.__parameters.begin()) != NULL)
+        return ERR_NICKNAMEINUSE(*msg.__parameters.begin());
+    msg.__client->__nickname = *msg.__parameters.begin();
+    if (msg.__client->setClient())
+        welcome(*msg.__client);
+}
+
+void Server::re_nick(Message &msg)
+{
+    if (msg.__parameters.size() < 1)
+        return ERR_NEEDMOREPARAMS(NICK);
+    if (msg.__client->__nickname == *msg.params.begin())
+        return;
+    if (getClient(*msg.__parameters.begin()) != NULL)
+        return ERR_NICKNAMEINUSE(*msg.__parameters.begin());
+    getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
+    getClient(msg.__client->__nickname)->make_prefix();
 }
 
 void Server::nick(Message &msg)
-{//msg.client는 클라이언트의 주소를 의미. 우리 계정은 fd로 관리하나?
-    if (msg.__client->__nickname == NULL)
+{
+    if (msg.__client->__nickname == NULL && msg.__client->__allowed)
         new_nick(msg);
     else
         re_nick(msg);
+}
+
+void Server::user(Message &msg)
+{
+    if (!msg.__client->__allowed)
+        return ;
+    if (msg.__parameters.size() < 4)
+        return ;
+    msg.__client->__username = *msg.__parameters.begin();
+    msg.__client->__hostname = *(++msg.__parameters.begin());
+    msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
+    if (msg.__client->setClient())
+        welcome(*msg.__client);
 }

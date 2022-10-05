@@ -5,9 +5,11 @@
 #ifndef FT_IRC_CLIENT_H
 #define FT_IRC_CLIENT_H
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string>
+#include "./main.h"
+
+#define ALLOW 1
+#define DENY 0
+
 
 class Client {
 public:
@@ -28,7 +30,7 @@ private:
 
     std::string __prefix;
     
-    std::string __type;
+    int __allowed;
 
     char buf[512];
 
