@@ -68,7 +68,7 @@ void Server::receive_message(Session &session, int fd) {
 	{
 		Message msg(fd, buf);
 		//broad_cast(session, buf, fd);
-        if (__cmd_list.find(msg.__command) != __cmd_list.end())
+        if (__cmd_list.find(djb2(msg.__command)) != __cmd_list.end())
         {
             (this->*(*__cmd_list).second)(msg);
         }
