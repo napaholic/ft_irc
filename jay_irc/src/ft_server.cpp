@@ -15,6 +15,7 @@
 Server::Server(const std::string &port, const std::string &password)
 	: __port(port), __password(password) 
 {
+    
     check_port(port);
 	// fcntl(STDOUT_FILENO, F_SETFL, O_NONBLOCK);
 	// fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
