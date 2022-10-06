@@ -116,15 +116,14 @@ Server::~Server() {
 
 void Server::pass(Message &msg)
 {//   서버 접속 시 패스워드와 같은지 확인해주는 명령어
-    if (getClient(msg.__fd)->__nickname != NULL)
+    if (msg.__client->__nickname != "")
         return;
     if (msg.__parameters.size() > 0)//parameters getter 필요할듯 혹은 friend 사용
     {
         if (*msg.__parameters.begin() == __password)
         {
-            print("Password accepted");
             send_message(msg.__client->__socket, "NOTICE :Password accepted.");
-            getClient(msg.__client)->__allowed = ALLOW;
+            msg.__client->__allowed = ALLOW;
         }
         else
             send_message(msg.__fd, "NOTICE :Incorrect password.");
@@ -132,7 +131,7 @@ void Server::pass(Message &msg)
     }
 }
 
-Client *Server::getClient(std::string nick)
+Client* Server::getClient(std::string nick)
 {
     std::vector<Client*>::iterator it = __clients.begin();
     while (it != __clients.end())
@@ -146,20 +145,33 @@ Client *Server::getClient(std::string nick)
 
 void Server::new_nick(Message &msg)
 {
+    char *ret;
+
     if (msg.__parameters.size() < 1)
-        return ERR_NEEDMOREPARAMS(NICK);
+    {
+        ret = ERR_NEEDMOREPARAMS(NICK);//수정 필요
+        send_message(msg.__client->__socket, ret);
+        return;
+    }
     if (getClient(*msg.__parameters.begin()) != NULL)
-        return ERR_NICKNAMEINUSE(*msg.__parameters.begin());
+    {
+        ret = ERR_NICKNAMEINUSE(msg.__parameters.begin());//수정 필요
+        send_message(msg.__client->__socket, ret);
+        return;
+    }
     msg.__client->__nickname = *msg.__parameters.begin();
     if (msg.__client->setClient())
-        welcome(*msg.__client);
+    {
+        ret = RPL_WELCOME(*msg.__client->__nickname);
+        send_message(msg.__client->socket, ret);
+    }
 }
 
 void Server::re_nick(Message &msg)
 {
     if (msg.__parameters.size() < 1)
         return ERR_NEEDMOREPARAMS(NICK);
-    if (msg.__client->__nickname == *msg.params.begin())
+    if (msg.__client->__nickname == *msg.__parameters.begin())
         return;
     if (getClient(*msg.__parameters.begin()) != NULL)
         return ERR_NICKNAMEINUSE(*msg.__parameters.begin());
@@ -185,12 +197,12 @@ void Server::user(Message &msg)
     msg.__client->__hostname = *(++msg.__parameters.begin());
     msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
     if (msg.__client->setClient())
-        welcome(*msg.__client);
+        RPL_WELCOME(*msg.__client->__nickname);
 }
 
 void Server::quit(Message &msg)
 {
-    std::string announce = __parameters.size() > 0 ? __parameters.begin() : *msg.__client->__nickname;
+    std::string announce = msg.__parameters.size() > 0 ? msg.__parameters.begin() : *msg.__client->__nickname;
 
     for (std::map<int, Channel>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
@@ -199,6 +211,6 @@ void Server::quit(Message &msg)
             (*it).eraseClient(msg.__client->__nickname);
         }
     }
-
+ //채널 맵 돌아다니면서 클라이언트 삭제하기
     delete msg.__client;
 }
