@@ -7,11 +7,10 @@
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
 	__port_int = std::atoi(port.c_str());
-	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("KICK"), &Server::nick));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("QUIT"), &Server::quit));
+	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::nick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("QUIT"), &Server::quit));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("USER"), &Server::user));
-	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("KICK"), &Server::user));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("TOPIC"), &Server::TOPIC));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("INVITE"), &Server::INVITE));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
@@ -69,9 +68,9 @@ void Server::receive_message(Session &session, int fd) {
 	{
 		Message msg(fd, buf);
 		//broad_cast(session, buf, fd);
-        if (__cmd_list.find(djb2(msg.__command)) != __cmd_list.end())
+        if (__cmd_list.find(msg.__command) != __cmd_list.end())
         {
-            CALL_MEMBER_FN(*this, __cmd_list[djb2(msg.__command)])();
+            CALL_MEMBER_FN(*this, __cmd_list[msg.__command])(msg);
         }
         else
         {
@@ -134,8 +133,8 @@ void Server::pass(Message &msg)
 
 Client* Server::getClient(std::string nick)
 {
-    std::vector<Client*>::iterator it = __clients.begin();
-    while (it != __clients.end())
+    std::vector<Client*>::iterator it = __clients->begin();
+    while (it != __clients->end())
     {
         if ((*it)->__nickname == nick)
             return *it;
@@ -150,7 +149,7 @@ void Server::new_nick(Message &msg)
 
     if (msg.__parameters.size() < 1)
     {
-        ret = ERR_NEEDMOREPARAMS(NICK);//수정 필요
+        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
         send_message(msg.__client->__socket, ret);
         return;
     }

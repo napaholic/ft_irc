@@ -13,12 +13,14 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 #ifndef JAY_IRC_SERVER_H
 #define JAY_IRC_SERVER_H
 
+#include "./util.hpp"
 #include "./main.h"
+
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 class Session;
 class Channel;
 class Message;
-class Channel;
 
 class Server {
 public:
@@ -43,7 +45,7 @@ private:
 	const std::string	__password;
 	int					__port_int;
 	std::map<int, Channel> *__channels;
-    std::map<unsigned long, void (Server::*)()> __cmd_list;
+    std::map<unsigned long, void (Server::*)(Message &msg)> __cmd_list;
 	std::vector<Client> *__clients;
 };
 

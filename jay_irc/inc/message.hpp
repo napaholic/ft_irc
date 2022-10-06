@@ -16,7 +16,7 @@ public:
 private:
     std::string __prefix;
     std::vector<std::string>    __parameters;
-    unsigned long long __command;
+    unsigned long __command;
     int __fd;
     Client *__client;
 };

@@ -7,5 +7,5 @@
 
 #include "./main.h"
 
-unsigned long       djb2(std::string str);
+unsigned long	djb2(std::string str);
 #endif // FT_IRC_UTIL_HPP
