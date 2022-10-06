@@ -34,7 +34,6 @@ private:
 
     char buf[512];
 
-    std::string __hopcount;
     std::string __operators;
 };
 #endif //FT_IRC_CLIENT_H
