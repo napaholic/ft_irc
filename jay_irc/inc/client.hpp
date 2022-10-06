@@ -18,7 +18,8 @@ public:
     ~Client();
     Client(const Client &rhs);
     int getSocket() const;
-    void setClient();
+    int setClient();
+    void make_prefix();
 
 private:
     int __socket;
