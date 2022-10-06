@@ -7,14 +7,40 @@
 
 #include "./main.h"
 
-#define const unsigned char opt_o = 1<<0 //0000 0001
-#define const unsigned char opt_k = 1<<1 //0000 0010
+#define const unsigned char opt_o = 0 //0000 0001
+#define const unsigned char opt_k = 2 //0000 0010
 
 
 class Channel
 {
     friend class Server;
-  private:
+public:
+	Channel(const std::string &name, const std::string &nick);
+	Channel(const std::string &name);
+	~Channel();
+	
+	void	addClient(const std::string &nick);
+	void	addBanned(const std::string &nick);
+	void	eraseClient(const std::string &nick);
+	void	eraseBanned(const std::string &nick);
+	
+	bool	isClient(const std::string &nick);
+	bool	isBanned(const std::string &nick);
+	
+	const unsigned char get_permissions(const std::string &nick);
+	
+	void	setPermissions(const std::string &nick, const std::string &perm);
+	
+	void	printChannel();
+	void	setMode(std::string const &mode);
+	void	setKey(std::string const &key);
+	std::string	sendUserList(std::string serverip, std::string nick);
+	
+	void	change_nick(const std::string &old_nick, const std::string &nick);
+	void	Channel::add_operater(std::string &str);
+	void	Channel::del_operator(std::string &str);
+	
+private:
     std::string __name;
     std::string __topic;
     std::list __operator_list;
@@ -25,30 +51,6 @@ class Channel
     
     Channel();
     Channel	&operator=(const Channel &rhs);
-  public:
-    Channel(const std::string &name, std::string const &nick);
-    Channel(const std::string &name);
-    ~Channel();
-
-    void	addClient(const std::string &nick);
-    void	addBanned(const std::string &nick);
-    void	eraseClient(const std::string &nick);
-    void	eraseBanned(const std::string &nick);
-
-    bool	isClient(const std::string &nick);
-    bool	isBanned(const std::string &nick);
-
-    const unsigned char get_permissions(const std::string &nick);
-
-    void	setPermissions(const std::string &nick, const std::string &perm);
-
-    void	printChannel();
-    void	setMode(std::string const &mode);
-    void	setKey(std::string const &key);
-    std::string	sendUserList(std::string serverip, std::string nick);
-
-    void	change_nick(const std::string &old_nick, const std::string &nick);
-
 };
 
 #endif // FT_IRC_CHANNEL_HPP
