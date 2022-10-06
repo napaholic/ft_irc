@@ -4,14 +4,14 @@
 #include "../inc/channel.hpp"
 
 Channel::Channel(const std::string &name, const std::string &nick)
-    : __name(name), __topic(""), __mode(0), key("")
+    : __name(name), __topic(""), __mode(0), __key("")
 {
     addClient(nick);
     setPermissions(nick, opt_o);
 }
 
 Channel::Channel(const std::string &name)
-    : __name(name), __topic(""), __mode(0), key("")
+    : __name(name), __topic(""), __mode(0), __key("")
 {}
 
 void    Channel::addClient(const std::string &nick)
@@ -178,4 +178,17 @@ void	Channel::change_nick(const std::string &old_nick, const std::string &nick)
             }
         }
     }
+}
+
+void	Channel::add_operater(std::string &str)
+{
+    if (std::find(__operator_list.begin(), __operator_list.end(), str) != __operator_list.end())
+        __operator_list.insert(__operator_list.begin(), std::string(str));
+}
+
+void	Channel::del_operator(std::string &str)
+{
+    std::list<std::string>::iterator it;
+    if ((it = std::find(__operator_list.begin(), __operator_list.end(), str)) != __operator_list.end())
+        __operator_list.erase(it);
 }

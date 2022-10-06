@@ -18,6 +18,7 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 class Channel {};
 class Client {};
 class Session;
+class Message;
 
 class Server {
 public:
@@ -41,7 +42,7 @@ private:
 	const std::string	__password;
 	int					__port_int;
 	std::map<int, Channel> *__channels;
-    std::map<unsigned long, void(*)(Message &)> __cmd_list;
+    std::map<unsigned long, void (Server::*)()> __cmd_list;
 	std::vector<Client> *__clients;
 };
 
