@@ -17,7 +17,7 @@ Client::Client(int socket, struct sockaddr_in client_addr)
 
 Client::~Client()
 {
-    close(socket);
+    close(__socket);
 }
 
 Client::Client(const Client &rhs)
