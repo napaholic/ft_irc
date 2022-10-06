@@ -7,8 +7,12 @@
 
 #include "./main.h"
 
-#define const unsigned char opt_o = 0 //0000 0001
-#define const unsigned char opt_k = 2 //0000 0010
+enum ch_opt
+{
+	opt_o = 1<<0,
+	opt_k = 1<<1,
+	opt_err = 1<<7
+};
 
 
 class Channel
@@ -27,23 +31,23 @@ public:
 	bool	isClient(const std::string &nick);
 	bool	isBanned(const std::string &nick);
 	
-	const unsigned char get_permissions(const std::string &nick);
+	unsigned char get_permissions(const std::string &nick);
 	
-	void	setPermissions(const std::string &nick, const std::string &perm);
+	void	setPermissions(const std::string &nick, unsigned char perm);
 	
 	void	printChannel();
-	void	setMode(std::string const &mode);
+	void	setMode(unsigned char mode);
 	void	setKey(std::string const &key);
-	std::string	sendUserList(std::string serverip, std::string nick);
+	//std::string	sendUserList(std::string serverip, std::string nick);
 	
 	void	change_nick(const std::string &old_nick, const std::string &nick);
-	void	Channel::add_operater(std::string &str);
-	void	Channel::del_operator(std::string &str);
+	void	add_operater(std::string &str);
+	void	del_operator(std::string &str);
 	
 private:
     std::string __name;
     std::string __topic;
-    std::list __operator_list;
+    std::list<std::string> __operator_list;
     std::map<std::string, unsigned char> __nicks;
     std::vector<std::string> __banned;
     unsigned char __mode;

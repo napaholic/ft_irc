@@ -7,16 +7,17 @@
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
 	__port_int = std::atoi(port.c_str());
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NICK"), &Server::NICK));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("QUIT"), &Server::QUIT));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("USER"), &Server::USER));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("TOPIC"), &Server::TOPIC));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("INVITE"), &Server::INVITE));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
-    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
+	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("KICK"), &Server::nick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("QUIT"), &Server::quit));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("USER"), &Server::user));
+	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)()>(djb2("KICK"), &Server::user));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("TOPIC"), &Server::TOPIC));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("INVITE"), &Server::INVITE));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
+//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
     
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     // map<long long, class::method>
