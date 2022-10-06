@@ -15,8 +15,6 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 
 #include "./main.h"
 
-class Channel {};
-class Client {};
 class Session;
 
 class Server {
@@ -28,10 +26,10 @@ public:
 	void	disconnect_client(Session &session, int fd);
 	void	send_message(int fd, char *buf);
 	void	broad_cast(Session &session, char *buf, int fd);
-	void	pass(Message &msg);
 	Client	*getClient(std::string nick);
 	void	new_nick(Message &msg);
 	void	re_nick(Message &msg);
+    void	pass(Message &msg);
 	void	nick(Message &msg);
 	void	user(Message &msg);
 	~Server();

@@ -9,7 +9,7 @@ Client::Client(int socket, struct sockaddr_in client_addr)
     :__socket(socket), __client_addr(client_addr)
 {
     memset(buf, 0, sizeof(buf));
-    __nickname = 0;
+    __nickname = "";
     __servername = "ft_irc@42seoul.com";
     __allowed = 0;
     std::cout << "Unknown client" << socket << "created.\n";
@@ -38,7 +38,7 @@ int Client::setClient()
 
 void Client::make_prefix()
 {
-    prefix.clear();
+    __prefix.clear();
     __prefix = std::string(":").append(__nickname);
     __prefix.append("!");
     __prefix.append(__username);
