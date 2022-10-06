@@ -31,4 +31,6 @@
 #include "./message.hpp"
 #include "./util.hpp"
 
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+
 #endif //FT_IRC_MAIN_H

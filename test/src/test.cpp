@@ -21,6 +21,7 @@ Server::Server() {
 
 void Server::set_kick() {
 	CALL_MEMBER_FN(*this, &Server::kick)();
+    CALL_MEMBER_FN(*this, __cmd_list[djb2("KICK")])();
 	((*this).*(__cmd_list[djb2("KICK")]))();
 }
 
