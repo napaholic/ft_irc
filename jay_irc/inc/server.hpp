@@ -16,6 +16,7 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 #include "./main.h"
 
 class Session;
+class Channel;
 
 class Server {
 public:
