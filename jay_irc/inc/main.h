@@ -16,13 +16,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <utility>
 
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <list>
 #include <map>
 #include <iostream>
 #include <sstream>
+
 
 #include "./session.hpp"
 #include "./channel.hpp"

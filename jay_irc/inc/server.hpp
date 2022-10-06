@@ -17,6 +17,7 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 
 class Session;
 class Message;
+class Channel;
 
 class Server {
 public:
@@ -33,6 +34,7 @@ public:
     void	pass(Message &msg);
 	void	nick(Message &msg);
 	void	user(Message &msg);
+	void	quit(Message &msg);
 	~Server();
 	
 private:
