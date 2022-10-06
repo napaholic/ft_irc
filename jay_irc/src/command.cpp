@@ -77,3 +77,18 @@ void Server::user(Message &msg)
     if (msg.__client->setClient())
         welcome(*msg.__client);
 }
+
+void Server::quit(Message &msg)
+{
+    std::string announce = __parameters.size() > 0 ? __parameters.begin() : *msg.__client->__nickname;
+    
+    for (std::map<int, Channel>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+    {
+        if ((*it).isClient(msg.__client->__nickname))
+        {
+            (*it).eraseClient(msg.__client->__nickname);
+        }
+    }
+    
+    delete msg.__client;
+}
