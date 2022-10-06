@@ -25,10 +25,10 @@
 #include <sstream>
 
 #include "./session.hpp"
-#include "./server.hpp"
 #include "./channel.hpp"
 #include "./client.hpp"
 #include "./message.hpp"
+#include "./server.hpp"
 #include "./util.hpp"
 #include "./responses.hpp"
 
