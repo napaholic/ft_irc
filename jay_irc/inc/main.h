@@ -30,6 +30,7 @@
 #include "./client.hpp"
 #include "./message.hpp"
 #include "./util.hpp"
+#include "./responses.hpp"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 

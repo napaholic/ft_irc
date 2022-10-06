@@ -12,6 +12,7 @@
 
 
 class Client {
+	friend class Server;
 public:
     Client(int socket, sockaddr_in client_addr);
     ~Client();

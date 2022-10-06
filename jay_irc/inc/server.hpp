@@ -28,6 +28,12 @@ public:
 	void	disconnect_client(Session &session, int fd);
 	void	send_message(int fd, char *buf);
 	void	broad_cast(Session &session, char *buf, int fd);
+	void	pass(Message &msg);
+	Client	*getClient(std::string nick);
+	void	new_nick(Message &msg);
+	void	re_nick(Message &msg);
+	void	nick(Message &msg);
+	void	user(Message &msg);
 	~Server();
 	
 private:
