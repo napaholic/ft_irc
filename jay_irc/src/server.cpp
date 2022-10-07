@@ -111,7 +111,6 @@ void Server::broad_cast(Session &session, char *buf, int fd)
 
 Server::~Server() {
 	delete __channels;
-	delete __clients;
 }
 
 void Server::pass(Message &msg)
@@ -133,8 +132,8 @@ void Server::pass(Message &msg)
 
 Client* Server::getClient(std::string nick)
 {
-    std::vector<Client*>::iterator it = __clients->begin();
-    while (it != __clients->end())
+    std::vector<Client*>::iterator it = __clients.begin();
+    while (it != __clients.end())
     {
         if ((*it)->__nickname == nick)
             return *it;
@@ -163,7 +162,7 @@ void Server::new_nick(Message &msg)
     if (msg.__client->setClient())
     {
         ret = RPL_WELCOME(*msg.__client->__nickname);
-        send_message(msg.__client->socket, ret);
+        send_message(msg.__client->__socket, ret);
     }
 }
 
