@@ -9,6 +9,7 @@ Server::Server(const std::string &port, const std::string &password)
 	__port_int = std::atoi(port.c_str());
 	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::nick));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("QUIT"), &Server::quit));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PASS"), &Server::pass));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("TOPIC"), &Server::TOPIC));
@@ -100,11 +101,11 @@ void Server::send_message(int fd, const char buf[]) {
 		return ;
 } //좀 정의해야됨
 
-//void Server::send_message(int fd, std::string str) {
-//    char *buf = const_cast<char *>(str.c_str());
-//    if (send(fd, buf, strlen(buf), 0) == -1)
-//        return ;
-//} //좀 정의해야됨
+void Server::send_message(int fd, std::string str) {
+    char *buf = const_cast<char *>(str.c_str());
+    if (send(fd, buf, strlen(buf), 0) == -1)
+        return ;
+} //좀 정의해야됨
 
 void Server::broad_cast(Session &session, char *buf, int fd)
 {
@@ -130,7 +131,7 @@ void Server::pass(Message &msg)
     }
     if (msg.__parameters.size() < 1)
     {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS(PASS));
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("PASS"));
         return;
     }
     else
@@ -140,12 +141,12 @@ void Server::pass(Message &msg)
     }
 }
 
-Client* Server::getClient(std::string nick)
+Client *Server::getClient(std::string nick)
 {
-    std::vector<Client*>::iterator it = __clients->begin();
+    std::vector<Client>::iterator it = __clients->begin();
     while (it != __clients->end())
     {
-        if ((*it)->__nickname == nick)
+        if ((*it).__nickname == nick)
             return *it;
         ++it;
     }
@@ -158,21 +159,18 @@ void Server::new_nick(Message &msg)
 
     if (msg.__parameters.size() < 1)
     {
-        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("NICK"));
         return;
     }
     if (getClient(*msg.__parameters.begin()) != NULL)
     {
-        ret = ERR_NICKNAMEINUSE(msg.__parameters.begin());//수정 필요
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
         return;
     }
     msg.__client->__nickname = *msg.__parameters.begin();
     if (msg.__client->setClient())
     {
-        ret = RPL_WELCOME(*msg.__client->__nickname);
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, RPL_WELCOME(*msg.__client->__nickname));
     }
 }
 
@@ -180,25 +178,23 @@ void Server::re_nick(Message &msg)
 {
     if (msg.__parameters.size() < 1)
     {
-        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("NICK"));
         return;
     }
     if (msg.__client->__nickname == *msg.__parameters.begin())
         return;
     if (getClient(*msg.__parameters.begin()) != NULL)
     {
-        ret = ERR_NICKNAMEINUSE(msg.__parameters.begin());//수정 필요
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
         return;
     }
     msg.__client->__nickname = *msg.__parameters.begin();
-    msg.__client->__nickname->make_prefix();
+    msg.__client->make_prefix();
 }
 
 void Server::nick(Message &msg)
 {
-    if (msg.__client->__nickname == NULL && msg.__client->__allowed)
+    if (msg.__client->__nickname == "" && msg.__client->__allowed)
         new_nick(msg);
     else if (msg.__client->__allowed)
         re_nick(msg);
@@ -213,8 +209,7 @@ void Server::user(Message &msg)
     }
     if (msg.__parameters.size() < 4)
     {
-        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("USER"));
         return;
     }
     msg.__client->__username = *msg.__parameters.begin();
@@ -226,15 +221,15 @@ void Server::user(Message &msg)
 
 void Server::quit(Message &msg)
 {
-    std::string announce = msg.__parameters.size() > 0 ? msg.__parameters.begin() : *msg.__client->__nickname;
-
-    for (std::map<int, Channel>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-    {
-        if ((*it).isClient(msg.__client->__nickname))
-        {
-            (*it).eraseClient(msg.__client->__nickname);
-        }
-    }
+//    std::string announce = msg.__parameters.size() > 0 ? msg.__parameters.begin() : *msg.__client->__nickname;
+//
+//    for (std::map<int, Channel>::iterator it = __channels->begin(); it != __channels->end(); ++it)
+//    {
+//        if (it->second.isClient(msg.__client->__nickname))
+//        {
+//            it->second.eraseClient(msg.__client->__nickname);
+//        }
+//    }
  //채널 맵 돌아다니면서 클라이언트 삭제하기
     delete msg.__client;
 }
