@@ -115,19 +115,26 @@ Server::~Server() {
 }
 
 void Server::pass(Message &msg)
-{//   서버 접속 시 패스워드와 같은지 확인해주는 명령어
-    if (msg.__client->__nickname != "")
+{
+    //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
+//    std::string ret;
+//    if (msg.__client->__allowed)
+//    {
+//        ret = ERR_ALREADYREGISTRED("PASS");
+//        send_message(msg.__client->__socket, ret);
+//        return;
+//    }
+    if (msg.__parameters.size() < 1)
+    {
+        char *ret = ERR_NONICKNAMEGIVEN;
+        //ret = ERR_NEEDMOREPARAMS("PASS");
+        send_message(msg.__client->__socket, ret);
         return;
-    if (msg.__parameters.size() > 0)//parameters getter 필요할듯 혹은 friend 사용
+    }
+    else
     {
         if (*msg.__parameters.begin() == __password)
-        {
-            send_message(msg.__client->__socket, "NOTICE :Password accepted.");
-            msg.__client->__allowed = ALLOW;
-        }
-        else
-            send_message(msg.__fd, "NOTICE :Incorrect password.");
-        //client 소켓이랑 그냥 소켓의 차이점을 모르겠음. 서버 얘기인가?
+            msg.__client->__allowed = 1;
     }
 }
 
@@ -163,27 +170,35 @@ void Server::new_nick(Message &msg)
     if (msg.__client->setClient())
     {
         ret = RPL_WELCOME(*msg.__client->__nickname);
-        send_message(msg.__client->socket, ret);
+        send_message(msg.__client->__socket, ret);
     }
 }
 
 void Server::re_nick(Message &msg)
 {
     if (msg.__parameters.size() < 1)
-        return ERR_NEEDMOREPARAMS(NICK);
+    {
+        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
+        send_message(msg.__client->__socket, ret);
+        return;
+    }
     if (msg.__client->__nickname == *msg.__parameters.begin())
         return;
     if (getClient(*msg.__parameters.begin()) != NULL)
-        return ERR_NICKNAMEINUSE(*msg.__parameters.begin());
-    getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
-    getClient(msg.__client->__nickname)->make_prefix();
+    {
+        ret = ERR_NICKNAMEINUSE(msg.__parameters.begin());//수정 필요
+        send_message(msg.__client->__socket, ret);
+        return;
+    }
+    msg.__client->__nickname = *msg.__parameters.begin();
+    msg.__client->__nickname->make_prefix();
 }
 
 void Server::nick(Message &msg)
 {
     if (msg.__client->__nickname == NULL && msg.__client->__allowed)
         new_nick(msg);
-    else
+    else if (msg.__client->__allowed)
         re_nick(msg);
 }
 
@@ -192,7 +207,11 @@ void Server::user(Message &msg)
     if (!msg.__client->__allowed)
         return ;
     if (msg.__parameters.size() < 4)
-        return ;
+    {
+        ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요
+        send_message(msg.__client->__socket, ret);
+        return;
+    }
     msg.__client->__username = *msg.__parameters.begin();
     msg.__client->__hostname = *(++msg.__parameters.begin());
     msg.__client->__realname = *(++(++(++msg.__parameters.begin())));

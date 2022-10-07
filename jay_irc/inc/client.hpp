@@ -7,10 +7,6 @@
 
 #include "./main.h"
 
-#define ALLOW 1
-#define DENY 0
-
-
 class Client {
 	friend class Server;
 public:
