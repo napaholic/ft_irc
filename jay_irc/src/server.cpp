@@ -95,10 +95,16 @@ void Server::disconnect_client(Session &session, int fd) {//jaewkim 알아올게
 	FD_CLR(fd, &session.__all);
 }
 
-void Server::send_message(int fd, char *buf) {
+void Server::send_message(int fd, const char buf[]) {
 	if (send(fd, buf, strlen(buf), 0) == -1)
 		return ;
 } //좀 정의해야됨
+
+//void Server::send_message(int fd, std::string str) {
+//    char *buf = const_cast<char *>(str.c_str());
+//    if (send(fd, buf, strlen(buf), 0) == -1)
+//        return ;
+//} //좀 정의해야됨
 
 void Server::broad_cast(Session &session, char *buf, int fd)
 {
@@ -117,18 +123,14 @@ Server::~Server() {
 void Server::pass(Message &msg)
 {
     //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
-//    std::string ret;
-//    if (msg.__client->__allowed)
-//    {
-//        ret = ERR_ALREADYREGISTRED("PASS");
-//        send_message(msg.__client->__socket, ret);
-//        return;
-//    }
+    if (msg.__client->__allowed)
+    {
+        send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
+        return;
+    }
     if (msg.__parameters.size() < 1)
     {
-        char *ret = ERR_NONICKNAMEGIVEN;
-        //ret = ERR_NEEDMOREPARAMS("PASS");
-        send_message(msg.__client->__socket, ret);
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS(PASS));
         return;
     }
     else
@@ -204,8 +206,11 @@ void Server::nick(Message &msg)
 
 void Server::user(Message &msg)
 {
-    if (!msg.__client->__allowed)
-        return ;
+    if (msg.__client->__allowed == 2)
+    {
+        send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
+        return;
+    }
     if (msg.__parameters.size() < 4)
     {
         ret = ERR_NEEDMOREPARAMS("NICK");//수정 필요

@@ -29,7 +29,7 @@ public:
 	void 	accept_client(Session &session);
 	void	receive_message(Session &session, int fd);
 	void	disconnect_client(Session &session, int fd);
-	void	send_message(int fd, char *buf);
+	void	send_message(int fd, const char buf[]);
 	void	broad_cast(Session &session, char *buf, int fd);
 	Client	*getClient(std::string nick);
 	void	new_nick(Message &msg);

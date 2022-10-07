@@ -24,8 +24,8 @@
 #define ERR_USERNOTINCHANNEL(nick, channel) (nick + " " + channel + " :They aren't on that channel\r\n")            // 441
 #define ERR_NOTONCHANNEL(channel) (channel + " :You're not on that channel\r\n")                                    // 442
 #define ERR_USERONCHANNEL(user, channel) (user + " " + channel + " :is already on channel\r\n")                     // 443
-//#define ERR_NEEDMOREPARAMS(command) (command + " :Not enough parameters\r\n")                                       // 461
-#define ERR_NEEDMOREPARAMS(command) std::string(command).append(" :Not enough parameters\r\n")                                       // 461
+#define ERR_NEEDMOREPARAMS(command) (command + " :Not enough parameters\r\n")                                       // 461
+//#define ERR_NEEDMOREPARAMS(command) std::string(command).append(" :Not enough parameters\r\n")                                       // 461
 #define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\r\n"                                        // 462
 #define ERR_PASSWDMISMATCH "Password incorrect\r\n"                                                                 // 464
 #define ERR_BADCHANMASK(channel) (channel + " :Bad Channel Mask\r\n")                                               // 476
