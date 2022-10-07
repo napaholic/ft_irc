@@ -31,6 +31,7 @@ int Client::setClient()
     if (__nickname.length() && __username.length())
     {
         make_prefix();
+        __allowed = 2;
         return 1;
     }
     return 0;
