@@ -147,7 +147,7 @@ Client *Server::getClient(std::string nick)
     while (it != __clients->end())
     {
         if ((*it).__nickname == nick)
-            return *it;
+            return &(*it);
         ++it;
     }
     return NULL;
@@ -159,7 +159,7 @@ void Server::new_nick(Message &msg)
 
     if (msg.__parameters.size() < 1)
     {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("NICK"));
+        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
         return;
     }
     if (getClient(*msg.__parameters.begin()) != NULL)
@@ -170,7 +170,7 @@ void Server::new_nick(Message &msg)
     msg.__client->__nickname = *msg.__parameters.begin();
     if (msg.__client->setClient())
     {
-        send_message(msg.__client->__socket, RPL_WELCOME(*msg.__client->__nickname));
+        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
     }
 }
 
@@ -178,7 +178,7 @@ void Server::re_nick(Message &msg)
 {
     if (msg.__parameters.size() < 1)
     {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("NICK"));
+        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
         return;
     }
     if (msg.__client->__nickname == *msg.__parameters.begin())
@@ -194,9 +194,9 @@ void Server::re_nick(Message &msg)
 
 void Server::nick(Message &msg)
 {
-    if (msg.__client->__nickname == "" && msg.__client->__allowed)
+    if (msg.__client->__allowed == 1)
         new_nick(msg);
-    else if (msg.__client->__allowed)
+    else if (msg.__client->__allowed == 2)
         re_nick(msg);
 }
 
@@ -216,7 +216,7 @@ void Server::user(Message &msg)
     msg.__client->__hostname = *(++msg.__parameters.begin());
     msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
     if (msg.__client->setClient())
-        RPL_WELCOME(*msg.__client->__nickname);
+        RPL_WELCOME(msg.__client->__nickname);
 }
 
 void Server::quit(Message &msg)
