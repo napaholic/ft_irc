@@ -118,7 +118,6 @@ void Server::broad_cast(Session &session, char *buf, int fd)
 
 Server::~Server() {
 	delete __channels;
-	delete __clients;
 }
 
 void Server::pass(Message &msg)
@@ -145,6 +144,7 @@ Client *Server::getClient(std::string nick)
 {
     std::vector<Client>::iterator it = __clients->begin();
     while (it != __clients->end())
+
     {
         if ((*it).__nickname == nick)
             return &(*it);
