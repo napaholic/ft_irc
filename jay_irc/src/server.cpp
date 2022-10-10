@@ -13,7 +13,7 @@ Server::Server(const std::string &port, const std::string &password)
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("TOPIC"), &Server::topic));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("INVITE"), &Server::INVITE));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("INVITE"), &Server::invite));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -328,6 +328,29 @@ void Server::topic(Message &msg)
     {
         send_message(msg.__client->__socket, RPL_NOTOPIC(channel->__name));
         return;
+    }
+    std::string topic = *(++msg.__parameters.begin());
+    channel->__topic = topic;
+    std::string ret = RPL_TOPIC(channel->__name, msg.__client->__nickname);
+    send_message(msg.__client->__socket, ret);
+}
+
+void Server::invite(Message &msg)//wip
+{
+    if (msg.__parameters.size() < 2)
+    {
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("INVITE"));
+        return;
+    }
+    std::string nickname = *msg.__parameters.begin();
+    if (getClient(nickname) == NULL)
+    {
+        send_message(msg.__client->__socket, ERR_NOSUCHNICK(nickname));
+        return;
+    }
+    Channel *channel = getChannel(*(++msg.__parameters.begin()));
+    if (channel->isClient(nickname)) {
+        send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
     }
     std::string topic = *(++msg.__parameters.begin());
     channel->__topic = topic;

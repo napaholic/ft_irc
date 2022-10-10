@@ -12,7 +12,7 @@
 #define RPL_INVITING(channel, nick) (channel + " " + nick + "\r\n")                                                 // 341
 #define RPL_YOUREOPER "You are now an IRC operator\r\n"                                                             // 381
 
-#define ERR_NOSUCHNICK(nick) (nick + " :No such nick\r\n")                                                          // 401
+#define ERR_NOSUCHNICK(nick) std::string(nick).append(" :No such nick\r\n")                                                          // 401
 #define ERR_NOSUCHCHANNEL(channel) (channel + " :No such channel\r\n")                                              // 403
 #define ERR_CANNOTSENDTOCHAN(channel) (channel + " :Cannot send to channel\r\n")                                    // 404
 #define ERR_NORECIPIENT(command) ("No recipient given " + command + "\r\n")                                         // 411

@@ -45,6 +45,7 @@ public:
 	void	quit(Message &msg);
     void    join(Message &msg);
     void    topic(Message &msg);
+    void    invite(Message &msg);
 	~Server();
 	
 private:
