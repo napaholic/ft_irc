@@ -276,10 +276,10 @@ void Server::quit(Message &msg)
         if (it->second.isClient(msg.__client->__nickname))
             it->second.eraseClient(msg.__client->__nickname);
     }
-    for (std::vector<Client>::iterator it = __clients->begin(); it != __clients->end(); ++it)
+    for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
-        if ((*it).__nickname == msg.__client->__nickname)
-            __clients->erase(it);
+        if ((*it)->__nickname == msg.__client->__nickname)
+            __clients->erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
     }
     delete msg.__client;
     send_message(__port_int, announce);
