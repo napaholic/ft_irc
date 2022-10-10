@@ -142,12 +142,12 @@ void Server::pass(Message &msg)
 
 Client *Server::getClient(std::string nick)
 {
-    std::vector<Client>::iterator it = __clients->begin();
-    while (it != __clients->end())
+    std::vector<Client *>::iterator it = __clients.begin();
+    while (it != __clients.end())
 
     {
-        if ((*it).__nickname == nick)
-            return &(*it);
+        if ((*it)->__nickname == nick)
+            return (*it);
         ++it;
     }
     return NULL;
