@@ -17,6 +17,7 @@ fd 돌아가면서 체크 및 뉴 커넥션 유저 받는것 역시 서버가한
 #include "./main.h"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+#define SPECIAL "[]\\`_^{|}-"
 
 class Session;
 class Channel;
@@ -29,15 +30,22 @@ public:
 	void 	accept_client(Session &session);
 	void	receive_message(Session &session, int fd);
 	void	disconnect_client(Session &session, int fd);
-	void	send_message(int fd, char *buf);
+	void	send_message(int fd, const char buf[]);
+    void	send_message(int fd, std::string str);
 	void	broad_cast(Session &session, char *buf, int fd);
 	Client	*getClient(std::string nick);
-	void	new_nick(Message &msg);
+    //Channel *getChannel(int chanel_key);
+    Channel *getChannel(std::string channel);
+	bool    err_nick(std::string nick);
+    void	new_nick(Message &msg);
 	void	re_nick(Message &msg);
     void	pass(Message &msg);
 	void	nick(Message &msg);
 	void	user(Message &msg);
 	void	quit(Message &msg);
+    void    join(Message &msg);
+    void    topic(Message &msg);
+    void    invite(Message &msg);
 	~Server();
 	
 private:
