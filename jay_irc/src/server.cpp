@@ -351,10 +351,12 @@ void Server::invite(Message &msg)//RPL_AWAY
     Channel *channel = getChannel(*(++msg.__parameters.begin()));
     if (getClient(nickname) == NULL) {
         send_message(__port_int, ERR_NOTONCHANNEL(nickname));
+        return;
     }
     if (channel->isClient(nickname) == 1) {
         std::string ret = ERR_USERONCHANNEL(nickname, channel->__name);
         send_message(__port_int, ret);
+        return;
     }
     channel->addClient(nickname);
     std::string ret = RPL_INVITING(channel->__name, nickname);
