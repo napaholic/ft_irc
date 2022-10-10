@@ -321,7 +321,7 @@ void Server::topic(Message &msg)
         return;
     }
     Channel *channel = getChannel(*msg.__parameters.begin());
-    if (channel->isClient(msg.__client->__nickname)) {
+    if (channel->isClient(msg.__client->__nickname) == 0) {
         send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
     }
     if (msg.__parameters.size() == 1)
@@ -335,7 +335,7 @@ void Server::topic(Message &msg)
     send_message(msg.__client->__socket, ret);
 }
 
-void Server::invite(Message &msg)//wip
+void Server::invite(Message &msg)//RPL_AWAY
 {
     if (msg.__parameters.size() < 2)
     {
@@ -349,11 +349,14 @@ void Server::invite(Message &msg)//wip
         return;
     }
     Channel *channel = getChannel(*(++msg.__parameters.begin()));
-    if (channel->isClient(nickname)) {
-        send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
+    if (getClient(nickname) == NULL) {
+        send_message(__port_int, ERR_NOTONCHANNEL(nickname));
     }
-    std::string topic = *(++msg.__parameters.begin());
-    channel->__topic = topic;
-    std::string ret = RPL_TOPIC(channel->__name, msg.__client->__nickname);
+    if (channel->isClient(nickname) == 1) {
+        std::string ret = ERR_USERONCHANNEL(nickname, channel->__name);
+        send_message(__port_int, ret);
+    }
+    channel->addClient(nickname);
+    std::string ret = RPL_INVITING(channel->__name, nickname);
     send_message(msg.__client->__socket, ret);
 }
