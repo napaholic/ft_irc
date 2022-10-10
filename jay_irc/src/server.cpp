@@ -7,7 +7,7 @@
 Server::Server(const std::string &port, const std::string &password)
 : __port(port), __password(password) {
 	__port_int = std::atoi(port.c_str());
-	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::nick));
+	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("NICK"), &Server::nick));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("QUIT"), &Server::quit));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PASS"), &Server::pass));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
@@ -153,10 +153,24 @@ Client *Server::getClient(std::string nick)
     return NULL;
 }
 
+bool Server::err_nick(std::string nick)
+{
+    if (nick.size() > 9)
+        return false;
+    if (!std::isalpha(nick[0]))
+        return false;
+    for (size_t i = 1; i < nick.size(); i++) {
+        if (std::isalnum(nick[i]))
+            continue;
+        if (std::strchr(SPECIAL, nick[i]))
+            continue;
+        return false;
+    }
+    return true;
+}
+
 void Server::new_nick(Message &msg)
 {
-    char *ret;
-
     if (msg.__parameters.size() < 1)
     {
         send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
@@ -165,6 +179,11 @@ void Server::new_nick(Message &msg)
     if (getClient(*msg.__parameters.begin()) != NULL)
     {
         send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
+        return;
+    }
+    if (err_nick(*msg.__parameters.begin()))
+    {
+        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
         return;
     }
     msg.__client->__nickname = *msg.__parameters.begin();
@@ -186,6 +205,11 @@ void Server::re_nick(Message &msg)
     if (getClient(*msg.__parameters.begin()) != NULL)
     {
         send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
+        return;
+    }
+    if (err_nick(*msg.__parameters.begin()))
+    {
+        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
         return;
     }
     msg.__client->__nickname = *msg.__parameters.begin();
@@ -221,15 +245,18 @@ void Server::user(Message &msg)
 
 void Server::quit(Message &msg)
 {
-//    std::string announce = msg.__parameters.size() > 0 ? msg.__parameters.begin() : *msg.__client->__nickname;
-//
-//    for (std::map<int, Channel>::iterator it = __channels->begin(); it != __channels->end(); ++it)
-//    {
-//        if (it->second.isClient(msg.__client->__nickname))
-//        {
-//            it->second.eraseClient(msg.__client->__nickname);
-//        }
-//    }
- //채널 맵 돌아다니면서 클라이언트 삭제하기
+    std::string announce = msg.__parameters.size() > 0 ? *msg.__parameters.begin() : msg.__client->__nickname;
+
+    for (std::map<int, Channel>::iterator it = __channels->begin(); it != __channels->end(); ++it)
+    {
+        if (it->second.isClient(msg.__client->__nickname))
+            it->second.eraseClient(msg.__client->__nickname);
+    }
+    for (std::vector<Client>::iterator it = __clients->begin(); it != __clients->end(); ++it)
+    {
+        if ((*it).__nickname == msg.__client->__nickname)
+            __clients->erase(it);
+    }
     delete msg.__client;
+    send_message(__port_int, announce);
 }

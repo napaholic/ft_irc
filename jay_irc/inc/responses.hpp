@@ -18,7 +18,7 @@
 #define ERR_NORECIPIENT(command) ("No recipient given " + command + "\r\n")                                         // 411
 #define ERR_NOTEXTTOSEND "No text to send\r\n"                                                                      // 412
 #define ERR_NONICKNAMEGIVEN "No nickname given\r\n"                                                                 // 431
-#define ERR_ERRONEUSNICKNAME(nick) (nick + " :Erroneous nickname\r\n")                                              // 432
+#define ERR_ERRONEUSNICKNAME(nick) std::string(nick).append(" :Erroneous nickname\r\n")                                              // 432
 #define ERR_NICKNAMEINUSE(nick) std::string(nick).append(" :Nickname is already in use\r\n")                                         // 433
 #define ERR_NICKCOLLISION(nick, user, host) (nick + " :Nickname collision KILL from " + user + "@" + host + "\r\n") // 436
 #define ERR_UNAVAILRESOURCE(resource) (resource + " :Nick/channel is temporarily unavailable\r\n")                  // 437
