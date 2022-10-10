@@ -10,9 +10,9 @@ Server::Server(const std::string &port, const std::string &password)
 	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("NICK"), &Server::nick));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("QUIT"), &Server::quit));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PASS"), &Server::pass));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("JOIN"), &Server::JOIN));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("TOPIC"), &Server::TOPIC));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("TOPIC"), &Server::topic));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("INVITE"), &Server::INVITE));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
@@ -129,7 +129,7 @@ void Server::pass(Message &msg)
         send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
         return;
     }
-    if (msg.__parameters.size() < 1)
+    if (msg.__parameters.size() == 0)
     {
         send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("PASS"));
         return;
@@ -153,6 +153,30 @@ Client *Server::getClient(std::string nick)
     return NULL;
 }
 
+//Channel *Server::getChannel(int channel_key)
+//{
+//    std::map<int, Channel>::iterator it = __channels->begin();
+//    while (it != __channels->end())
+//    {
+//        if ((*it).first == channel_key)
+//            return &(*it).second;
+//        ++it;
+//    }
+//    return NULL;
+//}
+
+Channel *Server::getChannel(std::string channel)
+{
+    std::map<int, Channel>::iterator it = __channels->begin();
+    while (it != __channels->end())
+    {
+        if ((*it).second.__name == channel)
+            return &(*it).second;
+        ++it;
+    }
+    return NULL;
+}
+
 bool Server::err_nick(std::string nick)
 {
     if (nick.size() > 9)
@@ -171,7 +195,7 @@ bool Server::err_nick(std::string nick)
 
 void Server::new_nick(Message &msg)
 {
-    if (msg.__parameters.size() < 1)
+    if (msg.__parameters.size() == 0)
     {
         send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
         return;
@@ -195,7 +219,7 @@ void Server::new_nick(Message &msg)
 
 void Server::re_nick(Message &msg)
 {
-    if (msg.__parameters.size() < 1)
+    if (msg.__parameters.size() == 0)
     {
         send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
         return;
@@ -259,4 +283,54 @@ void Server::quit(Message &msg)
     }
     delete msg.__client;
     send_message(__port_int, announce);
+}
+
+void Server::join(Message &msg)
+{
+    if (msg.__parameters.size() == 0)
+    {
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("JOIN"));
+        return;
+    }
+    for (std::vector<std::string>::iterator it = msg.__parameters.begin(); it != msg.__parameters.end(); ++it)
+    {
+        std::string channel_name = *it;
+        if (channel_name[0] != '#') {
+            send_message(__port_int, ERR_BADCHANMASK(channel_name));
+            continue;
+        }
+        Channel *channel = getChannel(channel_name);
+        if (channel == NULL)
+            channel = new Channel(channel_name, msg.__client->__nickname);
+        else {
+            if (channel->isClient(msg.__client->__nickname))
+                channel->addClient(msg.__client->__nickname);
+        }
+        if (channel->__topic != "") {
+            std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
+            send_message(msg.__client->__socket, ret);
+        }
+    }
+}
+
+void Server::topic(Message &msg)
+{
+    if (msg.__parameters.size() == 0)
+    {
+        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("TOPIC"));
+        return;
+    }
+    Channel *channel = getChannel(*msg.__parameters.begin());
+    if (channel->isClient(msg.__client->__nickname)) {
+        send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
+    }
+    if (msg.__parameters.size() == 1)
+    {
+        send_message(msg.__client->__socket, RPL_NOTOPIC(channel->__name));
+        return;
+    }
+    std::string topic = *(++msg.__parameters.begin());
+    channel->__topic = topic;
+    std::string ret = RPL_TOPIC(channel->__name, msg.__client->__nickname);
+    send_message(msg.__client->__socket, ret);
 }

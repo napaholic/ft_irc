@@ -34,6 +34,8 @@ public:
     void	send_message(int fd, std::string str);
 	void	broad_cast(Session &session, char *buf, int fd);
 	Client	*getClient(std::string nick);
+    //Channel *getChannel(int chanel_key);
+    Channel *getChannel(std::string channel);
 	bool    err_nick(std::string nick);
     void	new_nick(Message &msg);
 	void	re_nick(Message &msg);
@@ -41,6 +43,8 @@ public:
 	void	nick(Message &msg);
 	void	user(Message &msg);
 	void	quit(Message &msg);
+    void    join(Message &msg);
+    void    topic(Message &msg);
 	~Server();
 	
 private:
