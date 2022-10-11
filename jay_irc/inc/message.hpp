@@ -10,7 +10,7 @@ class Message {
     friend class Server;
     
 public:
-    Message(int fd, char *buf);
+    Message(Client* client, char *buf);
     ~Message();
 
 private:

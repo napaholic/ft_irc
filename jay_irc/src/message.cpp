@@ -1,9 +1,9 @@
 #include "../inc/message.hpp"
 
-Message::Message(int fd, char *buf): __fd(fd) {
+Message::Message(Client* client, char *buf): __client(client) {
     std::string s;
 	std::stringstream ss((std::string(buf)));
-	
+
 	while (ss >> s)
 		__parameters.push_back(s);
 	

@@ -12,7 +12,7 @@ Client::Client(int socket, struct sockaddr_in client_addr)
     __nickname = "";
     __servername = "ft_irc@42seoul.com";
     __allowed = 0;
-    std::cout << "Unknown client" << socket << "created.\n";
+    std::cout << "Unknown client " << socket << " created.\n";
 }
 
 Client::~Client()
