@@ -4,7 +4,7 @@
 #include <string.h>
 
 //#define RPL_WELCOME(nick) ("Welcome to the Internet Relay Network" + nick + "\r\n")                                 // 001
-#define RPL_WELCOME(nick) std::string("Welcome to the Internet Relay Network\r\n").append(nick)                                 // 001
+#define RPL_WELCOME(nick) std::string(nick).append(" Welcome to the Internet Relay Network\r\n")                                // 001
 #define RPL_UMODEIS(user_mode) (user_mode + "\r\n")                                                                 // 221
 #define RPL_UNIQOPIS(channel, nick) (channel + " " + nick + "\r\n")                                                 // 325
 #define RPL_NOTOPIC(channel) std::string(channel).append(" :No topic is set\r\n")                                                    // 331

@@ -30,7 +30,8 @@ void Server::run(Session &session) {
 		if (i == session.__fd)
 			accept_client(session);
 		else
-			receive_message(session, i);
+			//receive_message(session, i);
+            receive_message(session, i);
 	}
 }
 
@@ -48,6 +49,10 @@ void Server::accept_client(Session &session) {
 	if (client_fd > session.__fd_max)
 		session.__fd_max = client_fd;
     //client 생성
+    Client *tmp = new Client(client_fd, client_addr);
+    __clients.push_back(tmp);
+    send_message(tmp->__socket, "LOGIN FIRST");
+    std::cout << "new connection" << client_fd << std::endl;
 }
 
 void Server::receive_message(Session &session, int fd) {
@@ -67,7 +72,8 @@ void Server::receive_message(Session &session, int fd) {
 	}
 	else//커맨드에 따른 동작수행
 	{
-		Message msg(fd, buf);
+		Message msg(getClient(fd), buf);
+        std::cout << buf << std::endl;
 		//broad_cast(session, buf, fd);
         if (__cmd_list.find(msg.__command) != __cmd_list.end())
         {
@@ -98,12 +104,14 @@ void Server::disconnect_client(Session &session, int fd) {//jaewkim 알아올게
 }
 
 void Server::send_message(int fd, const char buf[]) {
+    std::cout << buf << std::endl;
 	if (send(fd, buf, strlen(buf), 0) == -1)
 		return ;
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str) {
     char *buf = const_cast<char *>(str.c_str());
+    std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
         return ;
 } //좀 정의해야됨
@@ -125,6 +133,7 @@ void Server::pass(Message &msg)
 {
     //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
 	std::cout << "some one use pass" << std::endl;
+    std::cout << msg.__client->__allowed << std::endl;
     if (msg.__client->__allowed)
     {
         send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
@@ -137,9 +146,22 @@ void Server::pass(Message &msg)
     }
     else
     {
+        std::cout << "else" << std::endl;
         if (*msg.__parameters.begin() == __password)
             msg.__client->__allowed = 1;
     }
+}
+
+Client *Server::getClient(int fd)
+{
+    std::vector<Client *>::iterator it = __clients.begin();
+    while (it != __clients.end())
+    {
+        if ((*it)->__socket == fd)
+            return (*it);
+        ++it;
+    }
+    return NULL;
 }
 
 Client *Server::getClient(std::string nick)
@@ -207,7 +229,7 @@ void Server::new_nick(Message &msg)
         send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
         return;
     }
-    if (err_nick(*msg.__parameters.begin()))
+    if (!err_nick(*msg.__parameters.begin()))
     {
         send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
         return;
@@ -265,8 +287,9 @@ void Server::user(Message &msg)
     msg.__client->__username = *msg.__parameters.begin();
     msg.__client->__hostname = *(++msg.__parameters.begin());
     msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
-    if (msg.__client->setClient())
-        RPL_WELCOME(msg.__client->__nickname);
+    if (msg.__client->setClient()) {
+        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
+    }
 }
 
 void Server::quit(Message &msg)
