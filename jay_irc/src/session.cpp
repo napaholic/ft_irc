@@ -36,6 +36,7 @@ void	Session::create_socket() {
 	__addr.sin_addr.s_addr = INADDR_ANY;
 	__addr.sin_port = htons(std::atoi(__port.c_str()));
 	
+	
 	if (bind(__fd, (struct sockaddr *)&__addr, sizeof(__addr)) == -1)
 		throw std::runtime_error("Cannot bind server socket");
 	if (listen(__fd, MAX_QUEUE) == -1)

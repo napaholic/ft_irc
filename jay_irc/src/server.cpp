@@ -27,7 +27,7 @@ void Server::run(Session &session) {
 	for (int i = 0; i < session.__fd_max + 1; i++)
 	{
 		if (FD_ISSET(i, &session.__reads) == 0) continue;
-		if (i == session.__fd)
+		if (i == session.__fd)//
 			accept_client(session);
 		else
 			//receive_message(session, i);
