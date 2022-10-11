@@ -14,6 +14,8 @@ Channel::Channel(const std::string &name)
     : __name(name), __topic(""), __mode(0), __key("")
 {}
 
+Channel::~Channel() {}
+
 void    Channel::addClient(const std::string &nick)
 {
     if (!isClient(nick) && !isBanned(nick))

@@ -71,6 +71,7 @@ void Server::receive_message(Session &session, int fd) {
 		//broad_cast(session, buf, fd);
         if (__cmd_list.find(msg.__command) != __cmd_list.end())
         {
+			std::cout << "some one use command" << std::endl;
             CALL_MEMBER_FN(*this, __cmd_list[msg.__command])(msg);
         }
         else
@@ -123,6 +124,7 @@ Server::~Server() {
 void Server::pass(Message &msg)
 {
     //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
+	std::cout << "some one use pass" << std::endl;
     if (msg.__client->__allowed)
     {
         send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
@@ -142,12 +144,12 @@ void Server::pass(Message &msg)
 
 Client *Server::getClient(std::string nick)
 {
-    std::vector<Client>::iterator it = __clients->begin();
-    while (it != __clients->end())
+    std::vector<Client *>::iterator it = __clients.begin();
+    while (it != __clients.end())
 
     {
-        if ((*it).__nickname == nick)
-            return &(*it);
+        if ((*it)->__nickname == nick)
+            return (*it);
         ++it;
     }
     return NULL;
@@ -276,10 +278,10 @@ void Server::quit(Message &msg)
         if (it->second.isClient(msg.__client->__nickname))
             it->second.eraseClient(msg.__client->__nickname);
     }
-    for (std::vector<Client>::iterator it = __clients->begin(); it != __clients->end(); ++it)
+    for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
-        if ((*it).__nickname == msg.__client->__nickname)
-            __clients->erase(it);
+//        if ((*it)->__nickname == msg.__client->__nickname)
+//            __clients->erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
     }
     delete msg.__client;
     send_message(__port_int, announce);
