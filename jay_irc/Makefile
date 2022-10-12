@@ -28,7 +28,7 @@ $(NAME) : $(OBJS) $(INCS)
 	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(OBJS) -o $@
 
 clean :
-	$(RM) $(RMFLAGS) $(OBJS)
+	$(RM) $(RMFLAGS) $(OBJ_DIR)
 
 fclean : clean
 	$(RM) $(NAME)
