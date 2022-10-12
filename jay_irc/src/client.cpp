@@ -48,7 +48,19 @@ void Client::make_prefix()
     __prefix.append(ip);
 }
 
+std::string Client::getChName() {
+	return this->__ch_name;
+}
+void Client::setChName(std::string __ch_name) {
+	this->__ch_name = __ch_name;
+}
+
 int Client::getSocket() const
 {
     return __socket;
+}
+
+std::string Client::getNickname()
+{
+	return __nickname;
 }
