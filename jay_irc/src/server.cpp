@@ -21,6 +21,7 @@ Server::Server(const std::string &port, const std::string &password)
     
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     // map<long long, class::method>
+	__ch_capa = 0;
 }
 
 void Server::run(Session &session) {
@@ -58,6 +59,8 @@ void Server::accept_client(Session &session) {
 void Server::receive_message(Session &session, int fd) {
 	ssize_t size;
 	char buf[510];
+	Client *tmp_client;
+	Channel *tmp_channel;
     // map<string, int> a;
     // a["KICK"]
 
@@ -82,7 +85,13 @@ void Server::receive_message(Session &session, int fd) {
         }
         else
         {
-            //responses
+			tmp_client = getClient(fd);
+			tmp_channel = getChannel(tmp_client->getChName());
+			std::map<Client *, std::string> ::iterator it = tmp_channel->__active_clients.begin();
+			while(it != tmp_channel->__active_clients.end())
+			{
+			
+			}
         }
 	}
     /*
@@ -126,7 +135,6 @@ void Server::broad_cast(Session &session, char *buf, int fd)
 }
 
 Server::~Server() {
-	delete __channels;
 }
 
 void Server::pass(Message &msg)
@@ -191,11 +199,11 @@ Client *Server::getClient(std::string nick)
 
 Channel *Server::getChannel(std::string channel)
 {
-    std::map<int, Channel>::iterator it = __channels->begin();
-    while (it != __channels->end())
+    std::map<int, Channel *>::iterator it = __channels.begin();
+    while (it != __channels.end())
     {
-        if ((*it).second.__name == channel)
-            return &(*it).second;
+        if (it->second->__name == channel)
+            return (*it).second;
         ++it;
     }
     return NULL;
@@ -296,10 +304,10 @@ void Server::quit(Message &msg)
 {
     std::string announce = msg.__parameters.size() > 0 ? *msg.__parameters.begin() : msg.__client->__nickname;
 
-    for (std::map<int, Channel>::iterator it = __channels->begin(); it != __channels->end(); ++it)
+    for (std::map<int, Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
-        if (it->second.isClient(msg.__client->__nickname))
-            it->second.eraseClient(msg.__client->__nickname);
+        if (it->second->isClient(msg.__client->__nickname))
+            it->second->eraseClient(msg.__client->__nickname);
     }
     for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
@@ -325,11 +333,14 @@ void Server::join(Message &msg)
             continue;
         }
         Channel *channel = getChannel(channel_name);
-        if (channel == NULL)
-            channel = new Channel(channel_name, msg.__client->__nickname);
+        if (channel == NULL) {
+			channel = new Channel(channel_name, msg.__client, ++__ch_capa);
+			this->__channels.insert(std::make_pair<int, Channel *>(__ch_capa, channel));
+			msg.__client->setChName(channel_name);
+		}
         else {
             if (channel->isClient(msg.__client->__nickname))
-                channel->addClient(msg.__client->__nickname);
+                channel->addClient(msg.__client, msg.__client->__nickname);
         }
         if (channel->__topic != "") {
             std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
@@ -383,7 +394,7 @@ void Server::invite(Message &msg)//RPL_AWAY
         send_message(__port_int, ret);
         return;
     }
-    channel->addClient(nickname);
+    channel->addClient(msg.__client, nickname);
     std::string ret = RPL_INVITING(channel->__name, nickname);
     send_message(msg.__client->__socket, ret);
 }
