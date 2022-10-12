@@ -49,12 +49,13 @@ public:
 	~Server();
 	
 private:
-	const std::string 	__port;
-	const std::string	__password;
-	int					__port_int;
-	std::map<int, Channel *> __channels;
+	const std::string 										__port;
+	const std::string										__password;
+	int														__port_int;
+	std::map<int, Channel *> 								__channels;
     std::map<unsigned long, void (Server::*)(Message &msg)> __cmd_list;
-	std::vector<Client *> __clients;
+	std::vector<Client *>									__clients;
+	int														__ch_capa;
 };
 
 

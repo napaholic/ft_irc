@@ -3,33 +3,33 @@
 //
 #include "../inc/channel.hpp"
 
-Channel::Channel(const std::string &name, const std::string &nick)
-    : __name(name), __topic(""), __mode(0), __key("")
+Channel::Channel(const std::string &name, Client *oper, int ch_id)
+    : __name(name), __topic(""), __mode(0), __key(""), __ch_id(ch_id)
 {
-    addClient(nick);
-    setPermissions(nick, opt_o);
+    addClient(oper, oper->getNickname());
+    setPermissions(oper, opt_o);
 }
 
-Channel::Channel(const std::string &name)
-    : __name(name), __topic(""), __mode(0), __key("")
+Channel::Channel(const std::string &name, int ch_id)
+    : __name(name), __topic(""), __mode(0), __key(""), __ch_id(ch_id)
 {}
 
 Channel::~Channel() {}
 
-void    Channel::addClient(const std::string &nick)
+void    Channel::addClient(Client *client, std::string ch_nickname)
 {
-    if (!isClient(nick) && !isBanned(nick))
-        __nicks.insert(std::pair<std::string, unsigned char>(nick, opt_o));
+    if (!isClient(client->getNickname()) && !isBanned(client->getNickname()))
+		__active_clients.insert(std::pair<Client *, std::string>(client, ch_nickname));
     else
         std::cout << "Could not add client\n";
 }
 
 bool	Channel::isClient(const std::string &nick)
 {
-    for(std::map<std::string, unsigned char>::iterator it = __nicks.begin();
-         it != __nicks.end(); ++it)
+    for(std::map<Client *, std::string>::iterator it = __active_clients.begin();
+         it != __active_clients.end(); ++it)
     {
-        if (it->first == nick)
+        if (it->second == nick)
             return (1);
     }
     return (0);
@@ -50,12 +50,12 @@ void	Channel::eraseClient(const std::string &nick)
 {
     if (!isClient(nick))
         return;
-    for(std::map<std::string, unsigned  char>::iterator it = __nicks.begin();
-         it != __nicks.end(); ++it)
+    for(std::map<Client *, std::string>::iterator it = __active_clients.begin();
+         it != __active_clients.end(); ++it)
     {
-        if (it->first == nick)
+        if (it->first->getNickname() == nick)
         {
-            __nicks.erase(it);
+			__active_clients.erase(it);
             return ;
         }
     }
@@ -65,11 +65,11 @@ unsigned char Channel::get_permissions(const std::string &nick)
 {
     if (!isClient(nick))
         return (opt_err);
-    for (std::map<std::string, unsigned char>::iterator it = __nicks.begin();
-         it != __nicks.end(); ++it)
+    for (std::list<std::string>::iterator it = __operator_list.begin();
+         it != __operator_list.end(); ++it)
     {
-        if (it->first == nick)
-            return (it->second);
+        if (*it == nick)
+            return (opt_o);
     }
     return (opt_err);
 }
@@ -99,13 +99,24 @@ void	Channel::eraseBanned(const std::string &nick)
     }
 }
 
-void	Channel::setPermissions(const std::string &nick, unsigned char perm)
+Client *Channel::findClientbyNick(std::string &nick)
 {
-    //perm solo admite un cambio de modo (+x a -x, no -a+e+x+e)
-    std::map<std::string, unsigned char>::iterator it = __nicks.find(nick);
-    if (it == __nicks.end())
-        return;
-    it->second |= perm;
+	std::map<Client *, std::string>::iterator it = __active_clients.begin();
+	while(it != __active_clients.end())
+	{
+		if (it->first->getNickname() == nick)
+			return it->first;
+	}
+	return NULL;
+}
+
+void	Channel::setPermissions(Client *client, unsigned char perm)
+{
+	std::map<Client *, std::string>::iterator it = __active_clients.find(client);
+	if (it == __active_clients.end())
+		return;
+	__operator_list.insert(__operator_list.end(), client->getNickname());
+	setMode(perm);
 }
 
 void	Channel::setMode(unsigned char mode)
@@ -115,8 +126,8 @@ void	Channel::setMode(unsigned char mode)
 
 void Channel::printChannel()
 {
-    for (std::map<std::string, unsigned char>::iterator it = __nicks.begin();
-         it != __nicks.end(); ++it)
+    for (std::map<Client *, std::string>::iterator it = __active_clients.begin();
+         it != __active_clients.end(); ++it)
     {
         std::cout << "-:" << it->first << "\t" << it->second << "\t\n";
     }
@@ -134,8 +145,8 @@ void Channel::setKey(const std::string &key)
 //        ":", serverip, " ", RPL_NAMREPLY, " ", nick, " @ ",
 //        this->__name, " :", "NULL"};
 //    std::string t = buildString(a);
-//    for (std::map<std::string, unsigned char>::iterator it = __nicks.begin();
-//         it != __nicks.end(); ++it)
+//    for (std::map<std::string, unsigned char>::iterator it = __active_clients.begin();
+//         it != __active_clients.end(); ++it)
 //    {
 //        std::cout << "NICK" << (*it).first << std::endl;
 //        if ((*it).second.at(0) == '+')//뒤에 +가 아니라 무슨옵션일때 '@'문자 붙이는지 알아야됨.
@@ -146,13 +157,14 @@ void Channel::setKey(const std::string &key)
 //    return (t);
 //}
 
-void	Channel::change_nick(const std::string &old_nick, const std::string &nick)
+void	Channel::change_nick(std::string &old_nick, std::string &nick)
 {
     std::cout<< old_nick << nick << std::endl;
     if (isClient(old_nick))
     {
-        __nicks.insert(std::pair<std::string, unsigned char>(nick, get_permissions(old_nick)));
-        eraseClient(old_nick);
+		if (isClient(nick))
+			return;
+		findClientbyNick(old_nick);
     }
     if (isBanned(old_nick))
     {

@@ -21,6 +21,7 @@ Server::Server(const std::string &port, const std::string &password)
     
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     // map<long long, class::method>
+	__ch_capa = 0;
 }
 
 void Server::run(Session &session) {
@@ -56,6 +57,8 @@ void Server::accept_client(Session &session) {
 void Server::receive_message(Session &session, int fd) {
 	ssize_t size;
 	char buf[510];
+	Client *tmp_client;
+	Channel *tmp_channel;
     // map<string, int> a;
     // a["KICK"]
 
@@ -80,7 +83,13 @@ void Server::receive_message(Session &session, int fd) {
         }
         else
         {
-            //responses
+			tmp_client = getClient(fd);
+			tmp_channel = getChannel(tmp_client->getChName());
+			std::map<Client *, std::string> ::iterator it = tmp_channel->__active_clients.begin();
+			while(it != tmp_channel->__active_clients.end())
+			{
+			
+			}
         }
 	}
     /*
@@ -185,11 +194,9 @@ Client *Server::getClient(std::string nick)
 Channel *Server::getChannel(std::string channel)
 {
     std::map<int, Channel *>::iterator it = __channels.begin();
-    std::cout << "ASasdf";
     while (it != __channels.end())
     {
-        std::cout << "ASasdf";
-        if ((*it).second->__name == channel)
+        if (it->second->__name == channel)
             return (*it).second;
         ++it;
     }
@@ -323,12 +330,14 @@ void Server::join(Message &msg)
         }
         std::cout << "before" << std::endl;
         Channel *channel = getChannel(channel_name);
-        std::cout << "after" << std::endl;
-        if (channel == NULL)
-            channel = new Channel(channel_name, msg.__client->__nickname);
+        if (channel == NULL) {
+			channel = new Channel(channel_name, msg.__client, ++__ch_capa);
+			this->__channels.insert(std::make_pair<int, Channel *>(__ch_capa, channel));
+			msg.__client->setChName(channel_name);
+		}
         else {
             if (channel->isClient(msg.__client->__nickname))
-                channel->addClient(msg.__client->__nickname);
+                channel->addClient(msg.__client, msg.__client->__nickname);
         }
         if (channel->__topic != "") {
             std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
@@ -382,7 +391,7 @@ void Server::invite(Message &msg)//RPL_AWAY
         send_message(__port_int, ret);
         return;
     }
-    channel->addClient(nickname);
+    channel->addClient(msg.__client, nickname);
     std::string ret = RPL_INVITING(channel->__name, nickname);
     send_message(msg.__client->__socket, ret);
 }
