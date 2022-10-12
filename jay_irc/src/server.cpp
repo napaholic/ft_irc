@@ -30,7 +30,6 @@ void Server::run(Session &session) {
 		if (i == session.__fd)//
 			accept_client(session);
 		else
-			//receive_message(session, i);
             receive_message(session, i);
 	}
 }
@@ -51,8 +50,7 @@ void Server::accept_client(Session &session) {
     //client 생성
     Client *tmp = new Client(client_fd, client_addr);
     __clients.push_back(tmp);
-    send_message(tmp->__socket, "LOGIN FIRST");
-    std::cout << "new connection" << client_fd << std::endl;
+    std::cout << "new connection from: " << client_fd << std::endl;
 }
 
 void Server::receive_message(Session &session, int fd) {
@@ -73,11 +71,11 @@ void Server::receive_message(Session &session, int fd) {
 	else//커맨드에 따른 동작수행
 	{
 		Message msg(getClient(fd), buf);
-        std::cout << buf << std::endl;
+        //std::cout << buf;
 		//broad_cast(session, buf, fd);
         if (__cmd_list.find(msg.__command) != __cmd_list.end())
         {
-			std::cout << "some one use command" << std::endl;
+			std::cout << "cmd by: " << msg.__client->__socket << " " << buf;
             CALL_MEMBER_FN(*this, __cmd_list[msg.__command])(msg);
         }
         else
@@ -104,14 +102,12 @@ void Server::disconnect_client(Session &session, int fd) {//jaewkim 알아올게
 }
 
 void Server::send_message(int fd, const char buf[]) {
-    std::cout << buf << std::endl;
 	if (send(fd, buf, strlen(buf), 0) == -1)
 		return ;
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str) {
     char *buf = const_cast<char *>(str.c_str());
-    std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
         return ;
 } //좀 정의해야됨
@@ -126,14 +122,12 @@ void Server::broad_cast(Session &session, char *buf, int fd)
 }
 
 Server::~Server() {
-	delete __channels;
+	//delete __channels;
 }
 
 void Server::pass(Message &msg)
 {
     //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
-	std::cout << "some one use pass" << std::endl;
-    std::cout << msg.__client->__allowed << std::endl;
     if (msg.__client->__allowed)
     {
         send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
@@ -146,7 +140,6 @@ void Server::pass(Message &msg)
     }
     else
     {
-        std::cout << "else" << std::endl;
         if (*msg.__parameters.begin() == __password)
             msg.__client->__allowed = 1;
     }
@@ -191,11 +184,13 @@ Client *Server::getClient(std::string nick)
 
 Channel *Server::getChannel(std::string channel)
 {
-    std::map<int, Channel>::iterator it = __channels->begin();
-    while (it != __channels->end())
+    std::map<int, Channel *>::iterator it = __channels.begin();
+    std::cout << "ASasdf";
+    while (it != __channels.end())
     {
-        if ((*it).second.__name == channel)
-            return &(*it).second;
+        std::cout << "ASasdf";
+        if ((*it).second->__name == channel)
+            return (*it).second;
         ++it;
     }
     return NULL;
@@ -255,13 +250,15 @@ void Server::re_nick(Message &msg)
         send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
         return;
     }
-    if (err_nick(*msg.__parameters.begin()))
+    if (!err_nick(*msg.__parameters.begin()))
     {
         send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
         return;
     }
-    msg.__client->__nickname = *msg.__parameters.begin();
-    msg.__client->make_prefix();
+    getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
+    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
+    getClient(msg.__client->__nickname)->make_prefix();
+    std::cout << msg.__client->__prefix <<std::endl;
 }
 
 void Server::nick(Message &msg)
@@ -296,10 +293,10 @@ void Server::quit(Message &msg)
 {
     std::string announce = msg.__parameters.size() > 0 ? *msg.__parameters.begin() : msg.__client->__nickname;
 
-    for (std::map<int, Channel>::iterator it = __channels->begin(); it != __channels->end(); ++it)
+    for (std::map<int, Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
-        if (it->second.isClient(msg.__client->__nickname))
-            it->second.eraseClient(msg.__client->__nickname);
+        if (it->second->isClient(msg.__client->__nickname))
+            it->second->eraseClient(msg.__client->__nickname);
     }
     for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
@@ -321,10 +318,12 @@ void Server::join(Message &msg)
     {
         std::string channel_name = *it;
         if (channel_name[0] != '#') {
-            send_message(__port_int, ERR_BADCHANMASK(channel_name));
+            send_message(msg.__client->__socket, ERR_BADCHANMASK(channel_name));
             continue;
         }
+        std::cout << "before" << std::endl;
         Channel *channel = getChannel(channel_name);
+        std::cout << "after" << std::endl;
         if (channel == NULL)
             channel = new Channel(channel_name, msg.__client->__nickname);
         else {
