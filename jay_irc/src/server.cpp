@@ -170,7 +170,6 @@ Client *Server::getClient(std::string nick)
 {
     std::vector<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
-
     {
         if ((*it)->__nickname == nick)
             return (*it);
@@ -219,61 +218,81 @@ bool Server::err_nick(std::string nick)
     return true;
 }
 
-void Server::new_nick(Message &msg)
-{
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
-        return;
-    }
-    if (getClient(*msg.__parameters.begin()) != NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-        return;
-    }
-    if (!err_nick(*msg.__parameters.begin()))
-    {
-        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-        return;
-    }
-    msg.__client->__nickname = *msg.__parameters.begin();
-    if (msg.__client->setClient())
-    {
-        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
-    }
-}
-
-void Server::re_nick(Message &msg)
-{
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
-        return;
-    }
-    if (msg.__client->__nickname == *msg.__parameters.begin())
-        return;
-    if (getClient(*msg.__parameters.begin()) != NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-        return;
-    }
-    if (!err_nick(*msg.__parameters.begin()))
-    {
-        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-        return;
-    }
-    getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
-    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
-    getClient(msg.__client->__nickname)->make_prefix();
-    std::cout << msg.__client->__prefix <<std::endl;
-}
+//void Server::new_nick(Message &msg)
+//{
+//    if (msg.__parameters.size() == 0)
+//    {
+//        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
+//        return;
+//    }
+//    if (getClient(*msg.__parameters.begin()) != NULL)
+//    {
+//        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
+//        return;
+//    }
+//    if (!err_nick(*msg.__parameters.begin()))
+//    {
+//        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
+//        return;
+//    }
+//    msg.__client->__nickname = *msg.__parameters.begin();
+//    if (msg.__client->setClient())
+//    {
+//        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
+//    }
+//}
+//
+//void Server::re_nick(Message &msg)
+//{
+//    if (msg.__parameters.size() == 0)
+//    {
+//        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
+//        return;
+//    }
+//    if (msg.__client->__nickname == *msg.__parameters.begin())
+//        return;
+//    if (getClient(*msg.__parameters.begin()) != NULL)
+//    {
+//        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
+//        return;
+//    }
+//    if (!err_nick(*msg.__parameters.begin()))
+//    {
+//        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
+//        return;
+//    }
+//    msg.__client->__nickname = *msg.__parameters.begin();
+//    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
+//    msg.__client->make_prefix();
+//    std::cout << msg.__client->__prefix <<std::endl;
+//}
 
 void Server::nick(Message &msg)
 {
-    if (msg.__client->__allowed == 1)
-        new_nick(msg);
-    else if (msg.__client->__allowed == 2)
-        re_nick(msg);
+    if (msg.__parameters.size() == 0)
+    {
+        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
+        return;
+    }
+    if (msg.__client->__allowed == 2 && msg.__client->__nickname == *msg.__parameters.begin())
+        return;
+    if (getClient(*msg.__parameters.begin()) != NULL)
+    {
+        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
+        return;
+    }
+    if (!err_nick(*msg.__parameters.begin()))
+    {
+        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
+        return;
+    }
+    if (msg.__client->__allowed == 2)
+        getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
+    msg.__client->__nickname = *msg.__parameters.begin();
+    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
+    msg.__client->make_prefix();
+    if (msg.__client->setClient())
+        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
 }
 
 void Server::user(Message &msg)
@@ -307,8 +326,8 @@ void Server::quit(Message &msg)
     }
     for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
-//        if ((*it)->__nickname == msg.__client->__nickname)
-//            __clients->erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
+        if ((*it)->__nickname == msg.__client->__nickname)
+            __clients.erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
     }
     delete msg.__client;
     send_message(__port_int, announce);
@@ -328,7 +347,6 @@ void Server::join(Message &msg)
             send_message(msg.__client->__socket, ERR_BADCHANMASK(channel_name));
             continue;
         }
-        std::cout << "before" << std::endl;
         Channel *channel = getChannel(channel_name);
         if (channel == NULL) {
 			channel = new Channel(channel_name, msg.__client, ++__ch_capa);
@@ -355,7 +373,7 @@ void Server::topic(Message &msg)
     }
     Channel *channel = getChannel(*msg.__parameters.begin());
     if (channel->isClient(msg.__client->__nickname) == 0) {
-        send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
+        send_message(msg.__client->__socket, ERR_NOTONCHANNEL(channel->__name));
     }
     if (msg.__parameters.size() == 1)
     {
