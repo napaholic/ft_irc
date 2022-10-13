@@ -15,7 +15,7 @@ Server::Server(const std::string &port, const std::string &password)
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("TOPIC"), &Server::topic));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("INVITE"), &Server::invite));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PRIVMSG"), &Server::privmsg));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::kick));
+//    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::kick));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -23,7 +23,6 @@ Server::Server(const std::string &port, const std::string &password)
     
     //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     // map<long long, class::method>
-	__ch_capa = 0;
 }
 
 void Server::run(Session &session) {
@@ -195,11 +194,11 @@ Client *Server::getClient(std::string nick)
 
 Channel *Server::getChannel(std::string channel)
 {
-    std::map<int, Channel *>::iterator it = __channels.begin();
+    std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
-        if (it->second->__name == channel)
-            return (*it).second;
+        if ((*it)->__name == channel)
+            return (*it);
         ++it;
     }
     return NULL;
@@ -274,10 +273,10 @@ void Server::quit(Message &msg)
 {
     std::string announce = msg.__parameters.size() > 0 ? *msg.__parameters.begin() : msg.__client->__nickname;
 
-    for (std::map<int, Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+    for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
-        if (it->second->isClient(msg.__client->__nickname))
-            it->second->eraseClient(msg.__client->__nickname);
+        if ((*it)->isClient(msg.__client->__nickname))
+			(*it)->eraseClient(msg.__client->__nickname);
     }
     for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
@@ -304,8 +303,8 @@ void Server::join(Message &msg)
         }
         Channel *channel = getChannel(channel_name);
         if (channel == NULL) {
-			channel = new Channel(channel_name, msg.__client, ++__ch_capa);
-			this->__channels.insert(std::make_pair<int, Channel *>(__ch_capa, channel));
+			channel = new Channel(channel_name, msg.__client);
+			this->__channels.insert(__channels.begin(), channel);
 			msg.__client->setChName(channel_name);
 		}
         else {

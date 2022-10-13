@@ -3,15 +3,15 @@
 //
 #include "../inc/channel.hpp"
 
-Channel::Channel(const std::string &name, Client *oper, int ch_id)
-    : __name(name), __topic(""), __mode(0), __key(""), __ch_id(ch_id)
+Channel::Channel(const std::string &name, Client *oper)
+    : __name(name), __topic(""), __mode(0), __key("")
 {
     addClient(oper);
     setPermissions(oper, opt_o);
 }
 
-Channel::Channel(const std::string &name, int ch_id)
-    : __name(name), __topic(""), __mode(0), __key(""), __ch_id(ch_id)
+Channel::Channel(const std::string &name)
+    : __name(name), __topic(""), __mode(0), __key("")
 {}
 
 Channel::~Channel() {}
@@ -165,11 +165,11 @@ void Channel::setKey(const std::string &key)
 
 Client    *Channel::getClient(std::string nick)
 {
-    std::map<Client *, std::string>::iterator it = __active_clients.begin();
+    std::set<Client *>::iterator it = __active_clients.begin();
     while (it != __active_clients.end())
     {
-        if (it->second == nick)
-            return (*it).first;
+        if ((*it)->getNickname() == nick)
+            return (*it);
         ++it;
     }
     return NULL;
