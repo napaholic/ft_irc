@@ -46,7 +46,8 @@ public:
 	void	add_operater(std::string &str);
 	void	del_operator(std::string &str);
 	Client * findClientbyNick(std::string &nick);
-	
+
+    Client * getClient(std::string nick);
 private:
     std::string 							__name;
     std::string 							__topic;
