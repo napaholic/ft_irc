@@ -4,94 +4,100 @@
 
 #include "../inc/server.hpp"
 
-Server::Server(const std::string &port, const std::string &password)
-: __port(port), __password(password) {
-	__port_int = std::atoi(port.c_str());
-	__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("NICK"), &Server::nick));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("QUIT"), &Server::quit));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PASS"), &Server::pass));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("JOIN"), &Server::join));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("TOPIC"), &Server::topic));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("INVITE"), &Server::invite));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
-//    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
-    
-    //hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
-    // map<long long, class::method>
-	__ch_capa = 0;
+Server::Server(const std::string &port, const std::string &password) : __port(port), __password(password)
+{
+    __port_int = std::atoi(port.c_str());
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("NICK"), &Server::nick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("QUIT"), &Server::quit));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("PASS"), &Server::pass));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("JOIN"), &Server::join));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("USER"), &Server::user));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("TOPIC"), &Server::topic));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("INVITE"), &Server::invite));
+    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
+    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
+    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
+    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
+
+    // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
+    //  map<long long, class::method>
+    __ch_capa = 0;
 }
 
-void Server::run(Session &session) {
-	for (int i = 0; i < session.__fd_max + 1; i++)
-	{
-		if (FD_ISSET(i, &session.__reads) == 0) continue;
-		if (i == session.__fd)//
-			accept_client(session);
-		else
+void Server::run(Session &session)
+{
+    for (int i = 0; i < session.__fd_max + 1; i++)
+    {
+        if (FD_ISSET(i, &session.__reads) == 0)
+            continue;
+        if (i == session.__fd) //
+            accept_client(session);
+        else
             receive_message(session, i);
-	}
+    }
 }
 
-void Server::accept_client(Session &session) {
-	int client_fd;
-	struct sockaddr_in client_addr;
-	socklen_t addrlen = sizeof(struct sockaddr_in);
-	
-	memset(&client_addr, 0, sizeof(client_addr));
-	client_fd = accept(session.__fd, (struct sockaddr *)&client_addr, &addrlen);
-	if (client_fd == -1)
-		throw std::runtime_error("Cannot accept new connection");
-	fcntl(client_fd, F_SETFL, O_NONBLOCK);
-	FD_SET(client_fd, &session.__all);
-	if (client_fd > session.__fd_max)
-		session.__fd_max = client_fd;
-    //client 생성
+void Server::accept_client(Session &session)
+{
+    int client_fd;
+    struct sockaddr_in client_addr;
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+
+    memset(&client_addr, 0, sizeof(client_addr));
+    client_fd = accept(session.__fd, (struct sockaddr *)&client_addr, &addrlen);
+    if (client_fd == -1)
+        throw std::runtime_error("Cannot accept new connection");
+    fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    FD_SET(client_fd, &session.__all);
+    if (client_fd > session.__fd_max)
+        session.__fd_max = client_fd;
+    // client 생성
     Client *tmp = new Client(client_fd, client_addr);
     __clients.push_back(tmp);
     std::cout << "new connection from: " << client_fd << std::endl;
 }
 
-void Server::receive_message(Session &session, int fd) {
-	ssize_t size;
-	char buf[510];
-	Client *tmp_client;
-	Channel *tmp_channel;
+void Server::receive_message(Session &session, int fd)
+{
+    ssize_t size;
+    char buf[510];
+    Client *tmp_client;
+    Channel *tmp_channel;
+    Message *msg;
     // map<string, int> a;
     // a["KICK"]
 
-	while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR);
-	buf[size] = '\0';
+    while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR)
+        ;
+    buf[size] = '\0';
 
-	if (size <= 0)//특정 fd가 오류가있을시 || 클라이언트종료 해당 fd 연결해제
-	{
-		if (size == -1 && errno & (EAGAIN | EWOULDBLOCK | EINTR))
-			return;
-		disconnect_client(session, fd);
-	}
-	else//커맨드에 따른 동작수행
-	{
-		Message msg(getClient(fd), buf);
-        //std::cout << buf;
-		//broad_cast(session, buf, fd);
-        if (__cmd_list.find(msg.__command) != __cmd_list.end())
+    if (size <= 0) //특정 fd가 오류가있을시 || 클라이언트종료 해당 fd 연결해제
+    {
+        if (size == -1 && errno & (EAGAIN | EWOULDBLOCK | EINTR))
+            return;
+        disconnect_client(session, fd);
+    }
+    else //커맨드에 따른 동작수행
+    {
+        tmp_client = getClient(fd);
+        tmp_client->setMessage(buf);
+        msg = tmp_client->getMessage();
+        // std::cout << buf;
+        // broad_cast(session, buf, fd);
+        if (__cmd_list.find(msg->getCommand()) != __cmd_list.end())
         {
-			std::cout << "cmd by: " << msg.__client->__socket << " " << buf;
-            CALL_MEMBER_FN(*this, __cmd_list[msg.__command])(msg);
+            std::cout << "cmd by: " << tmp_client->getSocket() << " " << buf;
+            CALL_MEMBER_FN(*this, __cmd_list[msg->getCommand()])(*msg);
         }
         else
         {
-			tmp_client = getClient(fd);
-			tmp_channel = getChannel(tmp_client->getChName());
-			std::map<Client *, std::string> ::iterator it = tmp_channel->__active_clients.begin();
-			while(it != tmp_channel->__active_clients.end())
-			{
-			
-			}
+            tmp_channel = getChannel(tmp_client->getChannelName());
+            std::map<Client *, std::string>::iterator it = tmp_channel->__active_clients.begin();
+            while (it != tmp_channel->__active_clients.end())
+            {
+            }
         }
-	}
+    }
     /*
      * * 1. 파싱
      *      1-2. 오류체크 커맨드, 프리픽스, 이상 체크 패러미터는 string 으로 넘긴다.
@@ -102,36 +108,40 @@ void Server::receive_message(Session &session, int fd) {
      *  서버는 각 커맨드에 대한 맵을 가지고있다 key 는 커맨드 스트링 해쉬값, value 는 함수포인터
      *
      */
-	//수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
+    //수정 -> 해당 fd 만 닫고 데이터 처리  나중에처리.
 }
 
-void Server::disconnect_client(Session &session, int fd) {//jaewkim 알아올게
-	close(fd);
-	FD_CLR(fd, &session.__all);
+void Server::disconnect_client(Session &session, int fd)
+{ // jaewkim 알아올게
+    close(fd);
+    FD_CLR(fd, &session.__all);
 }
 
-void Server::send_message(int fd, const char buf[]) {
-	if (send(fd, buf, strlen(buf), 0) == -1)
-		return ;
+void Server::send_message(int fd, const char buf[])
+{
+    if (send(fd, buf, strlen(buf), 0) == -1)
+        return;
 } //좀 정의해야됨
 
-void Server::send_message(int fd, std::string str) {
+void Server::send_message(int fd, std::string str)
+{
     char *buf = const_cast<char *>(str.c_str());
     if (send(fd, buf, strlen(buf), 0) == -1)
-        return ;
+        return;
 } //좀 정의해야됨
 
 void Server::broad_cast(Session &session, char *buf, int fd)
 {
-	for (int i = session.__fd + 1; i <= session.__fd_max; i++)
-	{
-		if (i != fd)
-			send_message(i, buf);
-	}
+    for (int i = session.__fd + 1; i <= session.__fd_max; i++)
+    {
+        if (i != fd)
+            send_message(i, buf);
+    }
 }
 
-Server::~Server() {
-	//delete __channels;
+Server::~Server()
+{
+    // delete __channels;
 }
 
 void Server::pass(Message &msg)
@@ -170,7 +180,6 @@ Client *Server::getClient(std::string nick)
 {
     std::vector<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
-
     {
         if ((*it)->__nickname == nick)
             return (*it);
@@ -179,17 +188,17 @@ Client *Server::getClient(std::string nick)
     return NULL;
 }
 
-//Channel *Server::getChannel(int channel_key)
+// Channel *Server::getChannel(int channel_key)
 //{
-//    std::map<int, Channel>::iterator it = __channels->begin();
-//    while (it != __channels->end())
-//    {
-//        if ((*it).first == channel_key)
-//            return &(*it).second;
-//        ++it;
-//    }
-//    return NULL;
-//}
+//     std::map<int, Channel>::iterator it = __channels->begin();
+//     while (it != __channels->end())
+//     {
+//         if ((*it).first == channel_key)
+//             return &(*it).second;
+//         ++it;
+//     }
+//     return NULL;
+// }
 
 Channel *Server::getChannel(std::string channel)
 {
@@ -203,77 +212,66 @@ Channel *Server::getChannel(std::string channel)
     return NULL;
 }
 
-bool Server::err_nick(std::string nick)
+bool Server::isErrorNick(std::string nick)
 {
     if (nick.size() > 9)
-        return false;
+        return true;
     if (!std::isalpha(nick[0]))
-        return false;
-    for (size_t i = 1; i < nick.size(); i++) {
+        return true;
+    for (size_t i = 1; i < nick.size(); i++)
+    {
         if (std::isalnum(nick[i]))
             continue;
         if (std::strchr(SPECIAL, nick[i]))
             continue;
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
-void Server::new_nick(Message &msg)
+void Server::newNickname(Client &client)
 {
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
-        return;
-    }
-    if (getClient(*msg.__parameters.begin()) != NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-        return;
-    }
-    if (!err_nick(*msg.__parameters.begin()))
-    {
-        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-        return;
-    }
-    msg.__client->__nickname = *msg.__parameters.begin();
-    if (msg.__client->setClient())
-    {
-        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
-    }
+    Message &msg = *(client.getMessage());
+
+    client.setNickname(*msg.getParameters().begin());
+    if (client.allowClient())
+        send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
 }
 
-void Server::re_nick(Message &msg)
+void Server::changeNickname(Client &client)
 {
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
+    Message &msg = *(client.getMessage());
+
+    if (client.getNickname() == *msg.getParameters().begin())
         return;
-    }
-    if (msg.__client->__nickname == *msg.__parameters.begin())
-        return;
-    if (getClient(*msg.__parameters.begin()) != NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-        return;
-    }
-    if (!err_nick(*msg.__parameters.begin()))
-    {
-        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-        return;
-    }
-    getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
-    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
-    getClient(msg.__client->__nickname)->make_prefix();
-    std::cout << msg.__client->__prefix <<std::endl;
+    client.setNickname(*msg.getParameters().begin());
+    std::cout << "nickname changed to " << client.getNickname() << std::endl;
+    getClient(client.getNickname())->make_prefix();
+    std::cout << client.getPrefix() << std::endl;
 }
 
-void Server::nick(Message &msg)
+void Server::nick(Client &client)
 {
-    if (msg.__client->__allowed == 1)
-        new_nick(msg);
-    else if (msg.__client->__allowed == 2)
-        re_nick(msg);
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NONICKNAMEGIVEN);
+    if (getClient(*(msg.getParameters().begin())) != NULL)
+        return send_message(client.getSocket(), ERR_NICKNAMEINUSE(*(msg.getParameters().begin())));
+    if (isErrorNick(*(msg.getParameters().begin())) == true)
+        return send_message(client.getSocket(), ERR_ERRONEUSNICKNAME(*(msg.getParameters().begin())));
+
+    switch (client.getAllowed())
+    {
+    case 1:
+        newNickname(client);
+        break;
+    case 2:
+        changeNickname(client);
+        break;
+    default:
+        break;
+    }
 }
 
 void Server::user(Message &msg)
@@ -291,7 +289,8 @@ void Server::user(Message &msg)
     msg.__client->__username = *msg.__parameters.begin();
     msg.__client->__hostname = *(++msg.__parameters.begin());
     msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
-    if (msg.__client->setClient()) {
+    if (msg.__client->setClient())
+    {
         send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
     }
 }
@@ -307,8 +306,8 @@ void Server::quit(Message &msg)
     }
     for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
-//        if ((*it)->__nickname == msg.__client->__nickname)
-//            __clients->erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
+        //        if ((*it)->__nickname == msg.__client->__nickname)
+        //            __clients->erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
     }
     delete msg.__client;
     send_message(__port_int, announce);
@@ -324,22 +323,28 @@ void Server::join(Message &msg)
     for (std::vector<std::string>::iterator it = msg.__parameters.begin(); it != msg.__parameters.end(); ++it)
     {
         std::string channel_name = *it;
-        if (channel_name[0] != '#') {
+        if (channel_name[0] != '#')
+        {
             send_message(msg.__client->__socket, ERR_BADCHANMASK(channel_name));
             continue;
         }
         std::cout << "before" << std::endl;
         Channel *channel = getChannel(channel_name);
-        if (channel == NULL) {
-			channel = new Channel(channel_name, msg.__client, ++__ch_capa);
-			this->__channels.insert(std::make_pair<int, Channel *>(__ch_capa, channel));
-			msg.__client->setChName(channel_name);
-		}
-        else {
-            if (channel->isClient(msg.__client->__nickname))
+        if (channel == NULL)
+        {
+            std::cerr << "DEBUG : join : channel == NULL" << std::endl;
+            channel = new Channel(channel_name, msg.__client, ++__ch_capa);
+            this->__channels.insert(std::make_pair<int, Channel *>(__ch_capa, channel));
+            msg.__client->setChName(channel_name);
+        }
+        else
+        {
+            std::cerr << "DEBUG : join : channel != NULL" << std::endl;
+            if (!channel->isClient(msg.__client->__nickname))
                 channel->addClient(msg.__client, msg.__client->__nickname);
         }
-        if (channel->__topic != "") {
+        if (channel->__topic != "")
+        {
             std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
             send_message(msg.__client->__socket, ret);
         }
@@ -354,7 +359,8 @@ void Server::topic(Message &msg)
         return;
     }
     Channel *channel = getChannel(*msg.__parameters.begin());
-    if (channel->isClient(msg.__client->__nickname) == 0) {
+    if (channel->isClient(msg.__client->__nickname) == 0)
+    {
         send_message(__port_int, ERR_NOTONCHANNEL(channel->__name));
     }
     if (msg.__parameters.size() == 1)
@@ -368,7 +374,7 @@ void Server::topic(Message &msg)
     send_message(msg.__client->__socket, ret);
 }
 
-void Server::invite(Message &msg)//RPL_AWAY
+void Server::invite(Message &msg) // RPL_AWAY
 {
     if (msg.__parameters.size() < 2)
     {
@@ -382,11 +388,13 @@ void Server::invite(Message &msg)//RPL_AWAY
         return;
     }
     Channel *channel = getChannel(*(++msg.__parameters.begin()));
-    if (getClient(nickname) == NULL) {
+    if (getClient(nickname) == NULL)
+    {
         send_message(__port_int, ERR_NOTONCHANNEL(nickname));
         return;
     }
-    if (channel->isClient(nickname) == 1) {
+    if (channel->isClient(nickname) == 1)
+    {
         std::string ret = ERR_USERONCHANNEL(nickname, channel->__name);
         send_message(__port_int, ret);
         return;
