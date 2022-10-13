@@ -4,9 +4,8 @@
 
 #include "../inc/client.hpp"
 
-
 Client::Client(int socket, struct sockaddr_in client_addr)
-    :__socket(socket), __client_addr(client_addr)
+    : __socket(socket), __client_addr(client_addr), __message(NULL)
 {
     memset(buf, 0, sizeof(buf));
     __nickname = "";
@@ -20,13 +19,12 @@ Client::~Client()
     close(__socket);
 }
 
-Client::Client(const Client &rhs)
-    :__socket(rhs.__socket)
+Client::Client(const Client &rhs) : __socket(rhs.__socket)
 {
     memset(buf, 0, sizeof(buf));
 }
 
-int Client::setClient()
+int Client::allowClient()
 {
     if (__nickname.length() && __username.length() && __allowed == 1)
     {
@@ -48,11 +46,14 @@ void Client::make_prefix()
     __prefix.append(ip);
 }
 
-std::string Client::getChName() {
-	return this->__ch_name;
+std::string Client::getChannelName() const
+{
+    return __ch_name;
 }
-void Client::setChName(std::string __ch_name) {
-	this->__ch_name = __ch_name;
+
+void Client::setChannelName(std::string ch_name)
+{
+    __ch_name = ch_name;
 }
 
 int Client::getSocket() const
@@ -60,7 +61,54 @@ int Client::getSocket() const
     return __socket;
 }
 
-std::string Client::getNickname()
+const std::string &Client::getNickname() const
 {
-	return __nickname;
+    return __nickname;
+}
+
+void Client::setNickname(const std::string &name)
+{
+    __nickname = name;
+}
+
+int Client::getAllowed() const
+{
+    return __allowed;
+}
+
+void Client::setMessage(char *buffer)
+{
+    if (__message != NULL)
+        delete __message;
+    __message = new Message(buffer);
+}
+
+Message *Client::getMessage() const
+{
+    return __message;
+}
+
+const std::string &Client::getPrefix() const
+{
+    return __prefix;
+}
+
+void Client::setAllowed(int n)
+{
+    __allowed = n;
+}
+
+void Client::setUsername(const std::string &name)
+{
+    __username = name;
+}
+
+void Client::setHostname(const std::string &name)
+{
+    __hostname = name;
+}
+
+void Client::setRealname(const std::string &name)
+{
+    __realname = name;
 }

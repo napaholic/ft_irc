@@ -1,24 +1,26 @@
 #ifndef MESSAGE_HPP
-# define MESSAGE_HPP
+#define MESSAGE_HPP
 
 #include "main.h"
 
 class Client;
 
-class Message {
-    
-    friend class Server;
-    
-public:
-    Message(Client* client, char *buf);
+class Message
+{
+  private:
+    // Memeber variables
+    std::string __prefix;
+    std::vector<std::string> __parameters;
+    unsigned long __command;
+
+  public:
+    // Memebe functions
+    Message(char *buf);
     ~Message();
 
-private:
-    std::string __prefix;
-    std::vector<std::string>    __parameters;
-    unsigned long __command;
-    int __fd;
-    Client *__client;
+    // Element access
+	const std::vector<std::string> &getParameters() const;
+	const unsigned long &getCommand() const;
 };
 
 #endif

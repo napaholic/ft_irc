@@ -31,7 +31,7 @@ clean :
 	$(RM) $(RMFLAGS) $(OBJ_DIR)
 
 fclean : clean
-	$(RM) $(NAME)
+	$(RM) $(RMFLAGS) $(NAME)
 
 re :
 	make fclean
