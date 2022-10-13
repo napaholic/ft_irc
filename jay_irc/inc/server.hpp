@@ -37,8 +37,6 @@ public:
     Client	*getClient(int fd);
     Channel *getChannel(std::string channel);
 	bool    err_nick(std::string nick);
-    void	new_nick(Message &msg);
-	void	re_nick(Message &msg);
     void	pass(Message &msg);
 	void	nick(Message &msg);
 	void	user(Message &msg);
@@ -46,6 +44,9 @@ public:
     void    join(Message &msg);
     void    topic(Message &msg);
     void    invite(Message &msg);
+    void    privmsg(Message &msg);
+    void    kick(Message &msg);
+    std::vector<std::string> split(std::string str, char Delimiter);
 	~Server();
 	
 private:
@@ -56,6 +57,7 @@ private:
     std::map<unsigned long, void (Server::*)(Message &msg)> __cmd_list;
 	std::vector<Client *>									__clients;
 	int														__ch_capa;
+
 };
 
 

@@ -14,6 +14,8 @@ Server::Server(const std::string &port, const std::string &password)
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("TOPIC"), &Server::topic));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("INVITE"), &Server::invite));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("PRIVMSG"), &Server::privmsg));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message &msg)>(djb2("KICK"), &Server::kick));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
 //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -116,6 +118,7 @@ void Server::send_message(int fd, const char buf[]) {
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str) {
+    str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
     if (send(fd, buf, strlen(buf), 0) == -1)
         return ;
@@ -218,55 +221,6 @@ bool Server::err_nick(std::string nick)
     return true;
 }
 
-//void Server::new_nick(Message &msg)
-//{
-//    if (msg.__parameters.size() == 0)
-//    {
-//        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
-//        return;
-//    }
-//    if (getClient(*msg.__parameters.begin()) != NULL)
-//    {
-//        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-//        return;
-//    }
-//    if (!err_nick(*msg.__parameters.begin()))
-//    {
-//        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-//        return;
-//    }
-//    msg.__client->__nickname = *msg.__parameters.begin();
-//    if (msg.__client->setClient())
-//    {
-//        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
-//    }
-//}
-//
-//void Server::re_nick(Message &msg)
-//{
-//    if (msg.__parameters.size() == 0)
-//    {
-//        send_message(msg.__client->__socket, ERR_NONICKNAMEGIVEN);
-//        return;
-//    }
-//    if (msg.__client->__nickname == *msg.__parameters.begin())
-//        return;
-//    if (getClient(*msg.__parameters.begin()) != NULL)
-//    {
-//        send_message(msg.__client->__socket, ERR_NICKNAMEINUSE(*msg.__parameters.begin()));
-//        return;
-//    }
-//    if (!err_nick(*msg.__parameters.begin()))
-//    {
-//        send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
-//        return;
-//    }
-//    msg.__client->__nickname = *msg.__parameters.begin();
-//    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
-//    msg.__client->make_prefix();
-//    std::cout << msg.__client->__prefix <<std::endl;
-//}
-
 void Server::nick(Message &msg)
 {
     if (msg.__parameters.size() == 0)
@@ -286,10 +240,11 @@ void Server::nick(Message &msg)
         send_message(msg.__client->__socket, ERR_ERRONEUSNICKNAME(*msg.__parameters.begin()));
         return;
     }
-    if (msg.__client->__allowed == 2)
+    if (msg.__client->__allowed == 2) {
         getClient(msg.__client->__nickname)->__nickname = *msg.__parameters.begin();
+        std::cout << "nickname changed to " << *msg.__parameters.begin() << std::endl;
+    }
     msg.__client->__nickname = *msg.__parameters.begin();
-    std::cout << "nickname changed to " << msg.__client->__nickname << std::endl;
     msg.__client->make_prefix();
     if (msg.__client->setClient())
         send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
@@ -412,4 +367,51 @@ void Server::invite(Message &msg)//RPL_AWAY
     channel->addClient(msg.__client, nickname);
     std::string ret = RPL_INVITING(channel->__name, nickname);
     send_message(msg.__client->__socket, ret);
+}
+
+std::vector<std::string> Server::split(std::string str, char Delimiter) {
+    std::istringstream iss(str);  // istringstream에 str을 담는다.
+    std::string buffer;           // 구분자를 기준으로 절삭된 문자열이 담겨지는 버퍼
+
+    std::vector<std::string> result;
+
+    // istringstream은 istream을 상속받으므로 getline을 사용할 수 있다.
+    while (std::getline(iss, buffer, Delimiter)) {
+        if (buffer.size() > 0) {
+            result.push_back(buffer);
+        }
+    }
+
+    return result;
+}
+
+void Server::privmsg(Message &msg)
+{
+    if (msg.__parameters.size() == 0)
+    {
+        send_message(msg.__client->__socket, ERR_NORECIPIENT("PRIVMSG"));
+        return;
+    }
+    if (msg.__parameters.size() == 1)
+    {
+        send_message(msg.__client->__socket, ERR_NOTEXTTOSEND);
+        return;
+    }
+    std::vector<std::string> targets = split(*msg.__parameters.begin(), ',');
+    std::string text = *(++msg.__parameters.begin());
+
+    for(std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
+    {
+        std::string target = *it;
+        if (target[0] == '#')
+        {}//sendToChannel;
+        else
+        {
+            if (getClient(target) == 0) {
+                send_message(msg.__client->__socket, ERR_NOSUCHNICK(target));
+                continue;
+            }
+            send_message(getClient(target)->__socket, text);
+        }
+    }
 }

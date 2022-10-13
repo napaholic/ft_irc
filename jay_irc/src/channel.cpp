@@ -19,7 +19,7 @@ Channel::~Channel() {}
 void    Channel::addClient(Client *client, std::string ch_nickname)
 {
     if (!isClient(client->getNickname()) && !isBanned(client->getNickname()))
-		__active_clients.insert(std::pair<Client *, std::string>(client, ch_nickname));
+        __active_clients.insert(std::pair<Client *, std::string>(client, ch_nickname));
     else
         std::cout << "Could not add client\n";
 }
