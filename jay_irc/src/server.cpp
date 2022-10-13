@@ -87,7 +87,7 @@ void Server::receive_message(Session &session, int fd) {
         {
 			tmp_client = getClient(fd);
 			tmp_channel = getChannel(tmp_client->getChName());
-			std::map<Client *, std::string> ::iterator it = tmp_channel->__active_clients.begin();
+			std::set<Client *> ::iterator it = tmp_channel->__active_clients.begin();
 			while(it != tmp_channel->__active_clients.end())
 			{
 			
@@ -310,7 +310,7 @@ void Server::join(Message &msg)
 		}
         else {
             if (channel->isClient(msg.__client->__nickname))
-                channel->addClient(msg.__client, msg.__client->__nickname);
+                channel->addClient(msg.__client);
         }
         if (channel->__topic != "") {
             std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
@@ -364,7 +364,7 @@ void Server::invite(Message &msg)//RPL_AWAY
         send_message(__port_int, ret);
         return;
     }
-    channel->addClient(msg.__client, nickname);
+    channel->addClient(msg.__client);
     std::string ret = RPL_INVITING(channel->__name, nickname);
     send_message(msg.__client->__socket, ret);
 }

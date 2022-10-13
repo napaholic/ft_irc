@@ -25,7 +25,7 @@ public:
 	Channel(const std::string &name, int ch_id);
 	~Channel();
 	
-	void	addClient(Client *client, std::string ch_nickname);
+	void	addClient(Client *client);
 	void	addBanned(const std::string &nick);
 	void	eraseClient(const std::string &nick);
 	void	eraseBanned(const std::string &nick);
@@ -52,7 +52,7 @@ private:
     std::string 							__name;
     std::string 							__topic;
     std::list<std::string> 					__operator_list;
-    std::map<Client *, std::string> 		__active_clients;
+    std::set<Client *> 						__active_clients;
     std::vector<std::string> 				__banned;
     unsigned char 							__mode;
     std::string 							__key;
