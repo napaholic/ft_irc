@@ -165,11 +165,11 @@ void Channel::setKey(const std::string &key)
 
 Client    *Channel::getClient(std::string nick)
 {
-    std::map<Client *, std::string>::iterator it = __active_clients.begin();
+    std::set<Client *>::iterator it = __active_clients.begin();
     while (it != __active_clients.end())
     {
-        if (it->second == nick)
-            return (*it).first;
+        if ((*it)->getNickname() == nick)
+            return (*it);
         ++it;
     }
     return NULL;

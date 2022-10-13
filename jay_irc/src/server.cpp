@@ -415,3 +415,5 @@ void Server::privmsg(Message &msg)
         }
     }
 }
+
+PRIVMSG nick1 laksjlkawjr adksjfhkajsdf aksdjf akjsdhfas dkjasdhfkjasd f
