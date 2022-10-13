@@ -53,10 +53,9 @@ class Server
     const std::string __port;
     const std::string __password;
     int __port_int;
-    std::map<int, Channel *> __channels;
+    std::set<Channel *> 									                    __channels;
     std::map<unsigned long, void (Server::*)(Client &client)> __cmd_list;
     std::vector<Client *> __clients;
-    int __ch_capa;
 };
 
 #endif // JAY_IRC_SERVER_H

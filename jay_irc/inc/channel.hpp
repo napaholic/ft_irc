@@ -21,11 +21,11 @@ class Channel
 {
     friend class Server;
 public:
-	Channel(const std::string &name, Client *client, int ch_id);
-	Channel(const std::string &name, int ch_id);
+	Channel(const std::string &name, Client *client);
+	Channel(const std::string &name);
 	~Channel();
 	
-	void	addClient(Client *client, std::string ch_nickname);
+	void	addClient(Client *client);
 	void	addBanned(const std::string &nick);
 	void	eraseClient(const std::string &nick);
 	void	eraseBanned(const std::string &nick);
@@ -46,16 +46,16 @@ public:
 	void	add_operater(std::string &str);
 	void	del_operator(std::string &str);
 	Client * findClientbyNick(std::string &nick);
-	
+
+    Client * getClient(std::string nick);
 private:
     std::string 							__name;
     std::string 							__topic;
     std::list<std::string> 					__operator_list;
-    std::map<Client *, std::string> 		__active_clients;
+    std::set<Client *> 						__active_clients;
     std::vector<std::string> 				__banned;
     unsigned char 							__mode;
     std::string 							__key;
-	const int								__ch_id;
     
     Channel();
     Channel	&operator=(const Channel &rhs);

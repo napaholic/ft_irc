@@ -26,7 +26,7 @@ Client::Client(const Client &rhs) : __socket(rhs.__socket)
 
 int Client::allowClient()
 {
-    if (__nickname.length() && __username.length())
+    if (__nickname.length() && __username.length() && __allowed == 1)
     {
         make_prefix();
         __allowed = 2;
