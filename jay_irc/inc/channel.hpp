@@ -21,8 +21,8 @@ class Channel
 {
     friend class Server;
 public:
-	Channel(const std::string &name, Client *client, int ch_id);
-	Channel(const std::string &name, int ch_id);
+	Channel(const std::string &name, Client *client);
+	Channel(const std::string &name);
 	~Channel();
 	
 	void	addClient(Client *client);
@@ -56,7 +56,6 @@ private:
     std::vector<std::string> 				__banned;
     unsigned char 							__mode;
     std::string 							__key;
-	const int								__ch_id;
     
     Channel();
     Channel	&operator=(const Channel &rhs);
