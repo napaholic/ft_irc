@@ -6,7 +6,7 @@
 Channel::Channel(const std::string &name, Client *oper, int ch_id)
     : __name(name), __topic(""), __mode(0), __key(""), __ch_id(ch_id)
 {
-    addClient(oper, oper->getNickname());
+    addClient(oper);
     setPermissions(oper, opt_o);
 }
 
@@ -16,20 +16,20 @@ Channel::Channel(const std::string &name, int ch_id)
 
 Channel::~Channel() {}
 
-void    Channel::addClient(Client *client, std::string ch_nickname)
+void    Channel::addClient(Client *client)
 {
     if (!isClient(client->getNickname()) && !isBanned(client->getNickname()))
-		__active_clients.insert(std::pair<Client *, std::string>(client, ch_nickname));
+		__active_clients.insert(__active_clients.begin(), client);
     else
         std::cout << "Could not add client\n";
 }
 
 bool	Channel::isClient(const std::string &nick)
 {
-    for(std::map<Client *, std::string>::iterator it = __active_clients.begin();
+    for(std::set<Client *>::iterator it = __active_clients.begin();
          it != __active_clients.end(); ++it)
     {
-        if (it->second == nick)
+        if ((*it)->getNickname() == nick)
             return (1);
     }
     return (0);
@@ -50,10 +50,10 @@ void	Channel::eraseClient(const std::string &nick)
 {
     if (!isClient(nick))
         return;
-    for(std::map<Client *, std::string>::iterator it = __active_clients.begin();
+    for(std::set<Client *>::iterator it = __active_clients.begin();
          it != __active_clients.end(); ++it)
     {
-        if (it->first->getNickname() == nick)
+        if ((*it)->getNickname() == nick)
         {
 			__active_clients.erase(it);
             return ;
@@ -101,18 +101,18 @@ void	Channel::eraseBanned(const std::string &nick)
 
 Client *Channel::findClientbyNick(std::string &nick)
 {
-	std::map<Client *, std::string>::iterator it = __active_clients.begin();
+	std::set<Client *>::iterator it = __active_clients.begin();
 	while(it != __active_clients.end())
 	{
-		if (it->first->getNickname() == nick)
-			return it->first;
+		if ((*it)->getNickname() == nick)
+			return (*it);
 	}
 	return NULL;
 }
 
 void	Channel::setPermissions(Client *client, unsigned char perm)
 {
-	std::map<Client *, std::string>::iterator it = __active_clients.find(client);
+	std::set<Client *>::iterator it = __active_clients.find(client);
 	if (it == __active_clients.end())
 		return;
 	__operator_list.insert(__operator_list.end(), client->getNickname());
@@ -126,11 +126,16 @@ void	Channel::setMode(unsigned char mode)
 
 void Channel::printChannel()
 {
-    for (std::map<Client *, std::string>::iterator it = __active_clients.begin();
+    for (std::set<Client *>::iterator it = __active_clients.begin();
          it != __active_clients.end(); ++it)
     {
-        std::cout << "-:" << it->first << "\t" << it->second << "\t\n";
+        std::cout << "-:" << (*it)->getNickname() << "\t\n";
     }
+	std::cout << "-:" << "channel operator list" << std::endl;
+	for (std::list<std::string>::iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
+	{
+		std::cout << (*it) << " is operator" << "\t\n";
+	}
 }
 
 void Channel::setKey(const std::string &key)
