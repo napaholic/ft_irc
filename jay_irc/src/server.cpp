@@ -7,13 +7,14 @@
 Server::Server(const std::string &port, const std::string &password) : __port(port), __password(password)
 {
     __port_int = std::atoi(port.c_str());
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("NICK"), &Server::nick));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("QUIT"), &Server::quit));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("PASS"), &Server::pass));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("JOIN"), &Server::join));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("USER"), &Server::user));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("TOPIC"), &Server::topic));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Message & msg)>(djb2("INVITE"), &Server::invite));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NICK"), &Server::nick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("QUIT"), &Server::quit));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PASS"), &Server::pass));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
+    __cmd_list.insert(
+        std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -87,7 +88,7 @@ void Server::receive_message(Session &session, int fd)
         if (__cmd_list.find(msg->getCommand()) != __cmd_list.end())
         {
             std::cout << "cmd by: " << tmp_client->getSocket() << " " << buf;
-            CALL_MEMBER_FN(*this, __cmd_list[msg->getCommand()])(*msg);
+            CALL_MEMBER_FN(*this, __cmd_list[msg->getCommand()])(*tmp_client);
         }
         else
         {
@@ -144,24 +145,17 @@ Server::~Server()
     // delete __channels;
 }
 
-void Server::pass(Message &msg)
+//   서버 접속 시 패스워드와 같은지 확인해주는 명령어
+void Server::pass(Client &client)
 {
-    //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
-    if (msg.__client->__allowed)
-    {
-        send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
-        return;
-    }
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("PASS"));
-        return;
-    }
-    else
-    {
-        if (*msg.__parameters.begin() == __password)
-            msg.__client->__allowed = 1;
-    }
+    Message &msg = *(client.getMessage());
+
+    if (client.getAllowed())
+        return send_message(client.getSocket(), ERR_ALREADYREGISTRED);
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("PASS"));
+    if (*msg.getParameters().begin() == __password)
+        client.setAllowed(1);
 }
 
 Client *Server::getClient(int fd)
@@ -169,7 +163,7 @@ Client *Server::getClient(int fd)
     std::vector<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
     {
-        if ((*it)->__socket == fd)
+        if ((*it)->getSocket() == fd)
             return (*it);
         ++it;
     }
@@ -181,7 +175,7 @@ Client *Server::getClient(std::string nick)
     std::vector<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
     {
-        if ((*it)->__nickname == nick)
+        if ((*it)->getNickname() == nick)
             return (*it);
         ++it;
     }
@@ -274,25 +268,20 @@ void Server::nick(Client &client)
     }
 }
 
-void Server::user(Message &msg)
+void Server::user(Client &client)
 {
-    if (msg.__client->__allowed == 2)
-    {
-        send_message(msg.__client->__socket, ERR_ALREADYREGISTRED);
-        return;
-    }
-    if (msg.__parameters.size() < 4)
-    {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("USER"));
-        return;
-    }
-    msg.__client->__username = *msg.__parameters.begin();
-    msg.__client->__hostname = *(++msg.__parameters.begin());
-    msg.__client->__realname = *(++(++(++msg.__parameters.begin())));
-    if (msg.__client->setClient())
-    {
-        send_message(msg.__client->__socket, RPL_WELCOME(msg.__client->__nickname));
-    }
+    Message &msg = *(client.getMessage());
+
+    if (client.getAllowed() == 2)
+        return send_message(client.getSocket(), ERR_ALREADYREGISTRED);
+    if (msg.getParameters().size() < 4)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("USER"));
+
+    client.setUsername(*msg.getParameters().begin());
+    client.setHostname(*(++msg.getParameters().begin()));
+    client.setRealname(*(++(++(++msg.getParameters().begin()))));
+    if (client.allowClient())
+        send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
 }
 
 void Server::quit(Message &msg)

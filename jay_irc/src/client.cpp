@@ -92,3 +92,23 @@ const std::string &Client::getPrefix() const
 {
     return __prefix;
 }
+
+void Client::setAllowed(int n)
+{
+    __allowed = n;
+}
+
+void Client::setUsername(const std::string &name)
+{
+    __username = name;
+}
+
+void Client::setHostname(const std::string &name)
+{
+    __hostname = name;
+}
+
+void Client::setRealname(const std::string &name)
+{
+    __realname = name;
+}

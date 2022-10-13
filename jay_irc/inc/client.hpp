@@ -50,6 +50,10 @@ class Client
     void setChannelName(std::string ch_name);
     void setNickname(const std::string &name);
     void setMessage(char *buffer);
+    void setAllowed(int n);
+    void setUsername(const std::string &name);
+	void setHostname(const std::string &name);
+	void setRealname(const std::string &name);
 
     // others (unknown)
     void make_prefix();

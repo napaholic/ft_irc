@@ -40,13 +40,13 @@ class Server
     bool isErrorNick(std::string nick);
     void newNickname(Client &client);
     void changeNickname(Client &client);
-    void pass(Message &msg);
+    void pass(Client &client);
     void nick(Client &client);
-    void user(Message &msg);
-    void quit(Message &msg);
-    void join(Message &msg);
-    void topic(Message &msg);
-    void invite(Message &msg);
+    void user(Client &client);
+    void quit(Client &client);
+    void join(Client &client);
+    void topic(Client &client);
+    void invite(Client &client);
     ~Server();
 
   private:
@@ -54,7 +54,7 @@ class Server
     const std::string __password;
     int __port_int;
     std::map<int, Channel *> __channels;
-    std::map<unsigned long, void (Server::*)(Message &msg)> __cmd_list;
+    std::map<unsigned long, void (Server::*)(Client &client)> __cmd_list;
     std::vector<Client *> __clients;
     int __ch_capa;
 };
