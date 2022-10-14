@@ -13,7 +13,7 @@ class Client
 {
   private:
     // Member variables
-    int __socket;
+    int __socket;//클라이언트의 fd값
     struct sockaddr_in __client_addr;
 
     std::string __ch_name;

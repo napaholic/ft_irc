@@ -53,7 +53,7 @@ void Server::accept_client(Session &session)
         session.__fd_max = client_fd;
     // client 생성
     Client *tmp = new Client(client_fd, client_addr);
-    __clients.push_back(tmp);
+    __clients.insert(tmp);
     std::cout << "new connection from: " << client_fd << std::endl;
 }
 
@@ -79,7 +79,7 @@ void Server::receive_message(Session &session, int fd)
     }
     else //커맨드에 따른 동작수행
     {
-        tmp_client = getClient(fd);
+        tmp_client = findClient(fd);
         tmp_client->setMessage(buf);
         msg = tmp_client->getMessage();
         // std::cout << buf;
@@ -88,14 +88,6 @@ void Server::receive_message(Session &session, int fd)
         {
             std::cout << "cmd by: " << tmp_client->getSocket() << " " << buf;
             CALL_MEMBER_FN(*this, __cmd_list[msg->getCommand()])(*tmp_client);
-        }
-        else
-        {
-            tmp_channel = getChannel(tmp_client->getChannelName());
-            std::set<Client *> ::iterator it = tmp_channel->__active_clients.begin();
-            while (it != tmp_channel->__active_clients.end())
-            {
-            }
         }
     }
     /*
@@ -123,7 +115,8 @@ void Server::send_message(int fd, const char buf[])
         return;
 } //좀 정의해야됨
 
-void Server::send_message(int fd, std::string str) {
+void Server::send_message(int fd, std::string str)
+{
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
     if (send(fd, buf, strlen(buf), 0) == -1)
@@ -157,9 +150,9 @@ void Server::pass(Client &client)
         client.setAllowed(1);
 }
 
-Client *Server::getClient(int fd)
+Client *Server::findClient(int fd)
 {
-    std::vector<Client *>::iterator it = __clients.begin();
+    std::set<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
     {
         if ((*it)->getSocket() == fd)
@@ -169,9 +162,9 @@ Client *Server::getClient(int fd)
     return NULL;
 }
 
-Client *Server::getClient(std::string nick)
+Client *Server::findClient(std::string nick)
 {
-    std::vector<Client *>::iterator it = __clients.begin();
+    std::set<Client *>::iterator it = __clients.begin();
     while (it != __clients.end())
     {
         if ((*it)->getNickname() == nick)
@@ -239,7 +232,7 @@ void Server::changeNickname(Client &client)
         return;
     client.setNickname(*msg.getParameters().begin());
     std::cout << "nickname changed to " << client.getNickname() << std::endl;
-    getClient(client.getNickname())->make_prefix();
+    findClient(client.getNickname())->make_prefix();
     std::cout << client.getPrefix() << std::endl;
 }
 
@@ -249,7 +242,7 @@ void Server::nick(Client &client)
 
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NONICKNAMEGIVEN);
-    if (getClient(*(msg.getParameters().begin())) != NULL)
+    if (findClient(*(msg.getParameters().begin())) != NULL)
         return send_message(client.getSocket(), ERR_NICKNAMEINUSE(*(msg.getParameters().begin())));
     if (isErrorNick(*(msg.getParameters().begin())) == true)
         return send_message(client.getSocket(), ERR_ERRONEUSNICKNAME(*(msg.getParameters().begin())));
@@ -283,53 +276,52 @@ void Server::user(Client &client)
         send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
 }
 
-void Server::quit(Message &msg)
+void Server::quit(Client &client)
 {
-    std::string announce = msg.__parameters.size() > 0 ? *msg.__parameters.begin() : msg.__client->__nickname;
-
-    for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-    {
-        if ((*it)->isClient(msg.__client->__nickname))
-			(*it)->eraseClient(msg.__client->__nickname);
-    }
-    for (std::vector<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
-    {
-        if ((*it)->__nickname == msg.__client->__nickname)
-            __clients.erase(it);// 10월 11일 jaewkim::CLIENT 삭제가 왜 필요한지 논의가필요합니다.
-    }
-    delete msg.__client;
-    send_message(__port_int, announce);
+	std::string announce = client.getMessage()->getParamSize() > 0 ?
+						   client.getMessage()->combineParameters() : client.getNickname();
+	
+	for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+	{
+		if ((*it)->isClient(client.getNickname()))
+			(*it)->eraseClient(client.getNickname());
+	}
+	send_message(__port_int, announce);
+	close(client.getSocket());
 }
 
-void Server::join(Message &msg)
+void Server::createChannel(const std::string &name, Client *client)
 {
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("JOIN"));
-        return;
-    }
-    for (std::vector<std::string>::iterator it = msg.__parameters.begin(); it != msg.__parameters.end(); ++it)
+    Channel *channel = new Channel(name, client);
+    __channels.insert(channel);
+    client->setChannelName(name);
+}
+
+void Server::join(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
+
+    for (std::vector<std::string>::const_iterator it = msg.getParameters().begin(); it != msg.getParameters().end();
+         ++it)
     {
         std::string channel_name = *it;
         if (channel_name[0] != '#')
         {
-            send_message(msg.__client->__socket, ERR_BADCHANMASK(channel_name));
+            send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
             continue;
         }
-        Channel *channel = getChannel(channel_name);
-        if (channel == NULL) {
-			channel = new Channel(channel_name, msg.__client);
-			this->__channels.insert(__channels.begin(), channel);
-			msg.__client->setChName(channel_name);
-		}
-        else {
-            if (channel->isClient(msg.__client->__nickname))
-                channel->addClient(msg.__client);
-        }
+        Channel *channel = findChannel(channel_name);
+        if (channel == NULL)
+            createChannel(channel_name, &client);
+        else
+            channel->addClient(&client);
         if (channel->__topic != "")
         {
-            std::string ret = RPL_TOPIC(channel_name, msg.__client->__nickname);
-            send_message(msg.__client->__socket, ret);
+            std::string ret = RPL_TOPIC(channel_name, client.getNickname());
+            send_message(client.getSocket(), ret);
         }
     }
 }
@@ -342,7 +334,8 @@ void Server::topic(Message &msg)
         return;
     }
     Channel *channel = getChannel(*msg.__parameters.begin());
-    if (channel->isClient(msg.__client->__nickname) == 0) {
+    if (channel->isClient(msg.__client->__nickname) == 0)
+    {
         send_message(msg.__client->__socket, ERR_NOTONCHANNEL(channel->__name));
     }
     if (msg.__parameters.size() == 1)
@@ -386,15 +379,18 @@ void Server::invite(Message &msg) // RPL_AWAY
     send_message(msg.__client->__socket, ret);
 }
 
-std::vector<std::string> Server::split(std::string str, char Delimiter) {
-    std::istringstream iss(str);  // istringstream에 str을 담는다.
-    std::string buffer;           // 구분자를 기준으로 절삭된 문자열이 담겨지는 버퍼
+std::vector<std::string> Server::split(std::string str, char Delimiter)
+{
+    std::istringstream iss(str); // istringstream에 str을 담는다.
+    std::string buffer;          // 구분자를 기준으로 절삭된 문자열이 담겨지는 버퍼
 
     std::vector<std::string> result;
 
     // istringstream은 istream을 상속받으므로 getline을 사용할 수 있다.
-    while (std::getline(iss, buffer, Delimiter)) {
-        if (buffer.size() > 0) {
+    while (std::getline(iss, buffer, Delimiter))
+    {
+        if (buffer.size() > 0)
+        {
             result.push_back(buffer);
         }
     }
@@ -417,14 +413,16 @@ void Server::privmsg(Message &msg)
     std::vector<std::string> targets = split(*msg.__parameters.begin(), ',');
     std::string text = *(++msg.__parameters.begin());
 
-    for(std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
+    for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
     {
         std::string target = *it;
         if (target[0] == '#')
-        {}//sendToChannel;
+        {
+        } // sendToChannel;
         else
         {
-            if (getClient(target) == 0) {
+            if (getClient(target) == 0)
+            {
                 send_message(msg.__client->__socket, ERR_NOSUCHNICK(target));
                 continue;
             }
