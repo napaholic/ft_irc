@@ -351,7 +351,7 @@ void Server::topic(Client &client)
 		return;
 	}
     std::string topic = *(++client.getMessage()->getParameters().begin());
-    channel->get = topic;
+    channel->setTopic(topic);
     std::string ret = RPL_TOPIC(channel->getName(), client.getNickname());
     send_message(client.getSocket(), ret);
 }
