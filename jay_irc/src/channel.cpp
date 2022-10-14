@@ -175,6 +175,18 @@ Client    *Channel::getClient(std::string nick)
     return NULL;
 }
 
+bool Channel::isOperator(std::string nick)
+{
+    std::set<std::string>::iterator it = __operator_list.begin();
+    while (it != __operator_list.end())
+    {
+        if (*it == nick)
+            return true;
+        ++it;
+    }
+    return false;
+}
+
 void	Channel::change_nick(std::string &old_nick, std::string &nick)
 {
     std::cout<< old_nick << nick << std::endl;
