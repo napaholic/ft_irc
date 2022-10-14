@@ -30,3 +30,20 @@ const unsigned long &Message::getCommand() const
 {
     return __command;
 }
+
+const std::string Message::combineParameters()
+{
+	std::string combinedParam;
+	for (std::vector<std::string>::iterator it = __parameters.begin(); it != __parameters.end(); ++it)
+	{
+		combinedParam += (*it);
+		if (it != --__parameters.end())
+			combinedParam += " ";
+	}
+	return combinedParam;
+}
+
+int Message::getParamSize()
+{
+	return __parameters.size();
+}
