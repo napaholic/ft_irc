@@ -16,10 +16,9 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
-    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
-    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     //  map<long long, class::method>
@@ -441,6 +440,34 @@ void Server::privmsg(Client &client)
     }
 }
 
+void Server::notice(Client &client)
+{
+    Message &msg = *(client.getMessage());
+    if (msg.getParameters().size() == 0)
+        return ;
+    if (msg.getParameters().size() == 1)
+        return ;
+
+    std::vector<std::string> targets = split(*msg.getParameters().begin(), ',');
+    std::string text = *(++msg.getParameters().begin());
+
+    for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
+    {
+        std::string target = *it;
+        if (target[0] == '#')
+        {
+            if (findChannel(target) == 0)
+                continue;
+            send_message(findChannel(target), text);
+        }
+        else
+        {
+            if (findClient(target) == 0)
+                continue;
+            send_message(findClient(target)->getSocket(), text);
+        }
+    }
+}
 //void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
 //{
 //    Channel *channel = findChannel(target);
