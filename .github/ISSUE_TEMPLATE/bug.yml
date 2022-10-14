@@ -10,9 +10,9 @@ body:
       description: What kind of error did you face ?
       options:
         - Error from compiler/makefile
-        - Error for socket programming functions
+        - unexpected for socket programming functions
         - Memory leak/dangling pointer/double free
-        - Segmentation fault
+        - Segmentation fault/Bus error
         - Misc unexpected behaviors
     validations:
       required: true
