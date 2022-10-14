@@ -186,6 +186,7 @@ bool Channel::findOperator(const Client &client) const
     return false;
 }
 
+
 void Channel::change_nick(std::string &old_nick, std::string &nick)
 {
     std::cout << old_nick << nick << std::endl;
@@ -212,6 +213,7 @@ void Channel::change_nick(std::string &old_nick, std::string &nick)
 // Need to fix add_del operator has Client * parameter.
 
 void Channel::add_operater(std::string &str)
+
 {
     if (std::find(__operator_list.begin(), __operator_list.end(), str) != __operator_list.end())
         __operator_list.insert(__operator_list.begin());

@@ -9,9 +9,10 @@ body:
       label: "Feature type"
       description: Which type of feature you are going to create ?
       options:
-        - new class/member features
+        - class/member features
         - non member functions
-        - new/modify socket programming functions
+        - socket programming functions
+        - Library functions
         - Makefile
         - Misc
     validations:
