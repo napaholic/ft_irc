@@ -100,15 +100,14 @@ void	Channel::eraseBanned(const std::string &nick)
     }
 }
 
-Client *Channel::findClientbyNick(std::string &nick)
+Client *Channel::findClient(std::string nick)
 {
-	std::set<Client *>::iterator it = __active_clients.begin();
-	while(it != __active_clients.end())
-	{
-		if ((*it)->getNickname() == nick)
-			return (*it);
-	}
-	return NULL;
+    for (std::set<Client *>::iterator it = __active_clients.begin(); it != __active_clients.end(); ++it)
+    {
+        if ((*it)->getNickname() == nick)
+            return (*it);
+    }
+    return NULL;
 }
 
 void	Channel::setPermissions(Client *client, unsigned char perm)
@@ -127,16 +126,17 @@ void	Channel::setMode(unsigned char mode)
 
 void Channel::printChannel()
 {
-    for (std::set<Client *>::iterator it = __active_clients.begin();
-         it != __active_clients.end(); ++it)
+    for (std::set<Client *>::iterator it = __active_clients.begin(); it != __active_clients.end(); ++it)
     {
         std::cout << "-:" << (*it)->getNickname() << "\t\n";
     }
-	std::cout << "-:" << "channel operator list" << std::endl;
-	for (std::list<std::string>::iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
-	{
-		std::cout << (*it) << " is operator" << "\t\n";
-	}
+    std::cout << "-:"
+              << "channel operator list" << std::endl;
+    for (std::list<std::string>::iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
+    {
+        std::cout << (*it) << " is operator"
+                  << "\t\n";
+    }
 }
 
 void Channel::setKey(const std::string &key)
@@ -145,7 +145,7 @@ void Channel::setKey(const std::string &key)
     setMode(opt_k);
 }
 
-std::set<Client*> Channel::getActiveClients()
+std::set<Client *> Channel::getActiveClients()
 {
     return __active_clients;
 }
@@ -180,49 +180,26 @@ Client    *Channel::findClient(std::string nick)
     return NULL;
 }
 
-bool Channel::isOperator(std::string nick)
+bool Channel::findOperator(const Client &client) const
 {
-    std::set<std::string>::iterator it = __operator_list.begin();
-    while (it != __operator_list.end())
+    for (std::set<Client *>::const_iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
     {
-        if (*it == nick)
+        if (**it == client)
             return true;
-        ++it;
     }
     return false;
 }
 
-void	Channel::change_nick(std::string &old_nick, std::string &nick)
-{
-    std::cout<< old_nick << nick << std::endl;
-    if (isClient(old_nick))
-    {
-		//if (isClient(nick))
-		//	return;
-		//findClientbyNick(old_nick);
-        //findClient(old_nick)->__nickname = nick;
-    }
-    if (isBanned(old_nick))
-    {
-        for (std::vector<std::string>::iterator it = __banned.begin();
-             it != __banned.end(); ++it)
-        {
-            if (*it == old_nick)
-            {
-                it = __banned.erase(it);
-                __banned.push_back(nick);
-            }
-        }
-    }
-}
+// Need to fix add_del operator has Client * parameter.
 
-void	Channel::add_operater(std::string &str)
+void Channel::add_operater(std::string &str)
+
 {
     if (std::find(__operator_list.begin(), __operator_list.end(), str) != __operator_list.end())
-        __operator_list.insert(__operator_list.begin(), std::string(str));
+        __operator_list.insert(__operator_list.begin());
 }
 
-void	Channel::del_operator(std::string &str)
+void Channel::del_operator(std::string &str)
 {
     std::list<std::string>::iterator it;
     if ((it = std::find(__operator_list.begin(), __operator_list.end(), str)) != __operator_list.end())
@@ -236,4 +213,9 @@ const std::string	Channel::getTopic()
 void	Channel::setTopic(std::string topic)
 {
 	__topic	= topic;
+}
+
+const std::string &Channel::getName() const
+{
+    return __name;
 }

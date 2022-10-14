@@ -16,10 +16,9 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
-    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
-    //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("NOTICE"), &Server::NOTICE));
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     //  map<long long, class::method>
@@ -286,16 +285,16 @@ void Server::user(Client &client)
 
 void Server::quit(Client &client)
 {
-	std::string announce = client.getMessage()->getParamSize() > 0 ?
-						   client.getMessage()->combineParameters() : client.getNickname();
-	
-	for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-	{
-		if ((*it)->isClient(client.getNickname()))
-			(*it)->eraseClient(client.getNickname());
-	}
-	send_message(__port_int, announce);
-	close(client.getSocket());
+    std::string announce =
+        client.getMessage()->getParamSize() > 0 ? client.getMessage()->combineParameters() : client.getNickname();
+
+    for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+    {
+        if ((*it)->isClient(client.getNickname()))
+            (*it)->eraseClient(client.getNickname());
+    }
+    send_message(__port_int, announce);
+    close(client.getSocket());
 }
 
 void Server::createChannel(const std::string &name, Client *client)
@@ -344,47 +343,37 @@ void Server::topic(Client &client)
 	Channel *channel = findChannel(*client.getMessage()->getParameters().begin());
     if (channel->isClient(client.getNickname()) == 0)
     {
-        send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->__name));
+        send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->getName()));
     }
 	if (client.getMessage()->getParamSize() == 1)
 	{
-		send_message(client.getSocket(), RPL_NOTOPIC(channel->__name));
+		send_message(client.getSocket(), RPL_NOTOPIC(channel->getName()));
 		return;
 	}
     std::string topic = *(++client.getMessage()->getParameters().begin());
-    channel->__topic = topic;
-    std::string ret = RPL_TOPIC(channel->__name, client.getNickname());
+    channel->get = topic;
+    std::string ret = RPL_TOPIC(channel->getName(), client.getNickname());
     send_message(client.getSocket(), ret);
 }
 
-void Server::invite(Message &msg) // RPL_AWAY
+void Server::invite(Client &client) // RPL_AWAY
 {
-    if (msg.__parameters.size() < 2)
-    {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("INVITE"));
-        return;
-    }
-    std::string nickname = *msg.__parameters.begin();
-    if (getClient(nickname) == NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NOSUCHNICK(nickname));
-        return;
-    }
-    Channel *channel = getChannel(*(++msg.__parameters.begin()));
-    if (getClient(nickname) == NULL)
-    {
-        send_message(__port_int, ERR_NOTONCHANNEL(nickname));
-        return;
-    }
-    if (channel->isClient(nickname) == 1)
-    {
-        std::string ret = ERR_USERONCHANNEL(nickname, channel->__name);
-        send_message(__port_int, ret);
-        return;
-    }
-    channel->addClient(msg.__client);
-    std::string ret = RPL_INVITING(channel->__name, nickname);
-    send_message(msg.__client->__socket, ret);
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() < 2)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("INVITE"));
+    std::string nickname = *msg.getParameters().begin();
+    if (findClient(nickname) == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHNICK(nickname));
+    Channel *channel = findChannel(*(++msg.getParameters().begin()));
+    // I think it should be changed that inviter is operator of the channel.
+    // if (findClient(nickname) == NULL)
+    //     return send_message(__port_int, ERR_NOTONCHANNEL(nickname));
+    if (channel->isClient(nickname) == true)
+        return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
+
+    channel->addClient(&client);
+    send_message(client.getSocket(), RPL_INVITING(channel->getName(), nickname));
 }
 
 std::vector<std::string> Server::split(std::string str, char Delimiter)
@@ -441,6 +430,34 @@ void Server::privmsg(Client &client)
     }
 }
 
+void Server::notice(Client &client)
+{
+    Message &msg = *(client.getMessage());
+    if (msg.getParameters().size() == 0)
+        return ;
+    if (msg.getParameters().size() == 1)
+        return ;
+
+    std::vector<std::string> targets = split(*msg.getParameters().begin(), ',');
+    std::string text = *(++msg.getParameters().begin());
+
+    for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
+    {
+        std::string target = *it;
+        if (target[0] == '#')
+        {
+            if (findChannel(target) == 0)
+                continue;
+            send_message(findChannel(target), text);
+        }
+        else
+        {
+            if (findClient(target) == 0)
+                continue;
+            send_message(findClient(target)->getSocket(), text);
+        }
+    }
+}
 //void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
 //{
 //    Channel *channel = findChannel(target);
