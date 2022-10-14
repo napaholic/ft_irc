@@ -13,7 +13,7 @@ class Client
 {
   private:
     // Member variables
-    int __socket;//클라이언트의 fd값
+    int __socket; //클라이언트의 fd값
     struct sockaddr_in __client_addr;
 
     std::string __ch_name;
@@ -47,13 +47,14 @@ class Client
     Message *getMessage() const;
     const std::string &getPrefix() const;
 
+    // Modifiers
     void setChannelName(std::string ch_name);
     void setNickname(const std::string &name);
     void setMessage(char *buffer);
     void setAllowed(int n);
     void setUsername(const std::string &name);
-	void setHostname(const std::string &name);
-	void setRealname(const std::string &name);
+    void setHostname(const std::string &name);
+    void setRealname(const std::string &name);
 
     // others (unknown)
     void make_prefix();

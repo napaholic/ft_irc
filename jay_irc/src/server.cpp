@@ -278,16 +278,16 @@ void Server::user(Client &client)
 
 void Server::quit(Client &client)
 {
-	std::string announce = client.getMessage()->getParamSize() > 0 ?
-						   client.getMessage()->combineParameters() : client.getNickname();
-	
-	for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-	{
-		if ((*it)->isClient(client.getNickname()))
-			(*it)->eraseClient(client.getNickname());
-	}
-	send_message(__port_int, announce);
-	close(client.getSocket());
+    std::string announce =
+        client.getMessage()->getParamSize() > 0 ? client.getMessage()->combineParameters() : client.getNickname();
+
+    for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+    {
+        if ((*it)->isClient(client.getNickname()))
+            (*it)->eraseClient(client.getNickname());
+    }
+    send_message(__port_int, announce);
+    close(client.getSocket());
 }
 
 void Server::createChannel(const std::string &name, Client *client)
@@ -349,34 +349,24 @@ void Server::topic(Message &msg)
     send_message(msg.__client->__socket, ret);
 }
 
-void Server::invite(Message &msg) // RPL_AWAY
+void Server::invite(Client &client) // RPL_AWAY
 {
-    if (msg.__parameters.size() < 2)
-    {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("INVITE"));
-        return;
-    }
-    std::string nickname = *msg.__parameters.begin();
-    if (getClient(nickname) == NULL)
-    {
-        send_message(msg.__client->__socket, ERR_NOSUCHNICK(nickname));
-        return;
-    }
-    Channel *channel = getChannel(*(++msg.__parameters.begin()));
-    if (getClient(nickname) == NULL)
-    {
-        send_message(__port_int, ERR_NOTONCHANNEL(nickname));
-        return;
-    }
-    if (channel->isClient(nickname) == 1)
-    {
-        std::string ret = ERR_USERONCHANNEL(nickname, channel->__name);
-        send_message(__port_int, ret);
-        return;
-    }
-    channel->addClient(msg.__client);
-    std::string ret = RPL_INVITING(channel->__name, nickname);
-    send_message(msg.__client->__socket, ret);
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() < 2)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("INVITE"));
+    std::string nickname = *msg.getParameters().begin();
+    if (findClient(nickname) == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHNICK(nickname));
+    Channel *channel = findChannel(*(++msg.getParameters().begin()));
+    // I think it should be changed that inviter is operator of the channel.
+    // if (findClient(nickname) == NULL)
+    //     return send_message(__port_int, ERR_NOTONCHANNEL(nickname));
+    if (channel->isClient(nickname) == true)
+        return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
+
+    channel->addClient(&client);
+    send_message(client.getSocket(), RPL_INVITING(channel->getName(), nickname));
 }
 
 std::vector<std::string> Server::split(std::string str, char Delimiter)
