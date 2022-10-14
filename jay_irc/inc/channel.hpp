@@ -47,8 +47,9 @@ public:
 	void	del_operator(std::string &str);
 	Client * findClientbyNick(std::string &nick);
 
-    Client * getClient(std::string nick);
+    Client * findClient(std::string nick);
     bool    isOperator(std::string nick);
+    std::set<Client*> getActiveClients();
 
 private:
     std::string                             __host;
