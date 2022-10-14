@@ -141,30 +141,30 @@ void Channel::setKey(const std::string &key)
     setMode(opt_k);
 }
 
-std::set<Client*> Channel::getActiveClients()
+std::set<Client *> Channel::getActiveClients()
 {
     return __active_clients;
 }
 
-//std::string Channel::sendUserList(std::string serverip, std::string nick)
+// std::string Channel::sendUserList(std::string serverip, std::string nick)
 //{
-//    std::string a[] = {
-//        ":", serverip, " ", RPL_NAMREPLY, " ", nick, " @ ",
-//        this->__name, " :", "NULL"};
-//    std::string t = buildString(a);
-//    for (std::map<std::string, unsigned char>::iterator it = __active_clients.begin();
-//         it != __active_clients.end(); ++it)
-//    {
-//        std::cout << "NICK" << (*it).first << std::endl;
-//        if ((*it).second.at(0) == '+')//뒤에 +가 아니라 무슨옵션일때 '@'문자 붙이는지 알아야됨.
-//            t.append("@");//우리 코드는 string 이 아니라 비트옵션이기때문에 추후 수정 필요.
-//        t.append((*it).first);
-//        t.append(" ");
-//    }
-//    return (t);
-//}
+//     std::string a[] = {
+//         ":", serverip, " ", RPL_NAMREPLY, " ", nick, " @ ",
+//         this->__name, " :", "NULL"};
+//     std::string t = buildString(a);
+//     for (std::map<std::string, unsigned char>::iterator it = __active_clients.begin();
+//          it != __active_clients.end(); ++it)
+//     {
+//         std::cout << "NICK" << (*it).first << std::endl;
+//         if ((*it).second.at(0) == '+')//뒤에 +가 아니라 무슨옵션일때 '@'문자 붙이는지 알아야됨.
+//             t.append("@");//우리 코드는 string 이 아니라 비트옵션이기때문에 추후 수정 필요.
+//         t.append((*it).first);
+//         t.append(" ");
+//     }
+//     return (t);
+// }
 
-Client    *Channel::findClient(std::string nick)
+Client *Channel::findClient(std::string nick)
 {
     std::set<Client *>::iterator it = __active_clients.begin();
     while (it != __active_clients.end())
@@ -176,27 +176,25 @@ Client    *Channel::findClient(std::string nick)
     return NULL;
 }
 
-bool Channel::isOperator(std::string nick)
+bool Channel::findOperator(const Client &client) const
 {
-    std::set<std::string>::iterator it = __operator_list.begin();
-    while (it != __operator_list.end())
+    for (std::set<Client *>::const_iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
     {
-        if (*it == nick)
+        if (**it == client)
             return true;
-        ++it;
     }
     return false;
 }
 
-void	Channel::change_nick(std::string &old_nick, std::string &nick)
+void Channel::change_nick(std::string &old_nick, std::string &nick)
 {
-    std::cout<< old_nick << nick << std::endl;
+    std::cout << old_nick << nick << std::endl;
     if (isClient(old_nick))
     {
-		//if (isClient(nick))
-		//	return;
-		//findClientbyNick(old_nick);
-        //findClient(old_nick)->__nickname = nick;
+        // if (isClient(nick))
+        //	return;
+        // findClientbyNick(old_nick);
+        // findClient(old_nick)->__nickname = nick;
     }
     if (isBanned(old_nick))
     {

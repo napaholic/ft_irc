@@ -60,4 +60,9 @@ class Client
     void make_prefix();
     int allowClient();
 };
+
+// Non-member functions
+bool operator==(const Client &lhs, const Client &rhs);
+bool operator!=(const Client &lhs, const Client &rhs);
+
 #endif // FT_IRC_CLIENT_H
