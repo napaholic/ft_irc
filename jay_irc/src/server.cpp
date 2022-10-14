@@ -326,8 +326,12 @@ void Server::join(Client &client)
     }
 }
 
-void Server::topic(Message &msg)
+void Server::topic(Client &client)
 {
+	if (client.getMessage()->getParamSize() == 0)
+	{
+	
+	}
     if (msg.__parameters.size() == 0)
     {
         send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("TOPIC"));

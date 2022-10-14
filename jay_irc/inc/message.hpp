@@ -22,7 +22,7 @@ class Message
 	const std::vector<std::string> &getParameters() const;
 	const std::string combineParameters();
 	const unsigned long &getCommand() const;
-	int getParamSize();
+	int getParamSize() const;
 };
 
 #endif

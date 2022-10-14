@@ -43,7 +43,7 @@ const std::string Message::combineParameters()
 	return combinedParam;
 }
 
-int Message::getParamSize()
+int Message::getParamSize() const
 {
 	return __parameters.size();
 }
