@@ -48,10 +48,13 @@ public:
 	Client * findClientbyNick(std::string &nick);
 
     Client * getClient(std::string nick);
+    bool    isOperator(std::string nick);
+
 private:
+    std::string                             __host;
     std::string 							__name;
     std::string 							__topic;
-    std::list<std::string> 					__operator_list;
+    std::set<std::string> 					__operator_list;
     std::set<Client *> 						__active_clients;
     std::vector<std::string> 				__banned;
     unsigned char 							__mode;

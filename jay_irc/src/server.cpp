@@ -13,8 +13,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
-    __cmd_list.insert(
-        std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::invite));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -193,7 +193,7 @@ Client *Server::getClient(std::string nick)
 //     return NULL;
 // }
 
-Channel *Server::getChannel(std::string channel)
+Channel *Server::findChannel(std::string channel)
 {
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
@@ -432,3 +432,27 @@ void Server::privmsg(Message &msg)
         }
     }
 }
+
+void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
+{
+    Channel *channel = findChannel(target);
+
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+    if (channel->isOperator(client.getNickname()) == false)
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
+
+}
+
+//void Server::mode(Client &client)
+//{
+//     Message &msg = *(client.getMessage());
+//
+//    if (msg.getParameters().size() == 0)
+//        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+//
+//    std::vector<std::string> params = msg.getParameters().begin();
+//    std::string target = *msg.getParameters().begin();
+//    if (target[0] == '#')
+//        return (modeChannel(target, client, params));
+//}

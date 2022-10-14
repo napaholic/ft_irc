@@ -36,10 +36,11 @@ class Server
     void broad_cast(Session &session, char *buf, int fd);
     Client *getClient(std::string nick);
     Client *getClient(int fd);
-    Channel *getChannel(std::string channel);
+    Channel *findChannel(std::string channel);
     bool isErrorNick(std::string nick);
     void newNickname(Client &client);
     void changeNickname(Client &client);
+    void modeChannel(std::string channel, Client &client, std::vector<std::string>& parameters);
     void pass(Client &client);
     void nick(Client &client);
     void user(Client &client);
@@ -47,6 +48,7 @@ class Server
     void join(Client &client);
     void topic(Client &client);
     void invite(Client &client);
+    void mode(Client &client);
     ~Server();
 
   private:
