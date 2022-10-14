@@ -192,30 +192,6 @@ bool Channel::isOperator(std::string nick)
     return false;
 }
 
-void	Channel::change_nick(std::string &old_nick, std::string &nick)
-{
-    std::cout<< old_nick << nick << std::endl;
-    if (isClient(old_nick))
-    {
-		//if (isClient(nick))
-		//	return;
-		//findClientbyNick(old_nick);
-        //findClient(old_nick)->__nickname = nick;
-    }
-    if (isBanned(old_nick))
-    {
-        for (std::vector<std::string>::iterator it = __banned.begin();
-             it != __banned.end(); ++it)
-        {
-            if (*it == old_nick)
-            {
-                it = __banned.erase(it);
-                __banned.push_back(nick);
-            }
-        }
-    }
-}
-
 void	Channel::add_operater(std::string &str)
 {
     if (std::find(__operator_list.begin(), __operator_list.end(), str) != __operator_list.end())
