@@ -333,27 +333,27 @@ void Server::join(Client &client)
     }
 }
 
-void Server::topic(Message &msg)
+void Server::topic(Client &client)
 {
-    if (msg.__parameters.size() == 0)
+	if (client.getMessage()->getParamSize() == 0)
+	{
+		send_message(client.getSocket(), ERR_NEEDMOREPARAMS("TOPIC"));
+		return;
+	}
+	Channel *channel = findChannel(*client.getMessage()->getParameters().begin());
+    if (channel->isClient(client.getNickname()) == 0)
     {
-        send_message(msg.__client->__socket, ERR_NEEDMOREPARAMS("TOPIC"));
-        return;
+        send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->getName()));
     }
-    Channel *channel = getChannel(*msg.__parameters.begin());
-    if (channel->isClient(msg.__client->__nickname) == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NOTONCHANNEL(channel->__name));
-    }
-    if (msg.__parameters.size() == 1)
-    {
-        send_message(msg.__client->__socket, RPL_NOTOPIC(channel->__name));
-        return;
-    }
-    std::string topic = *(++msg.__parameters.begin());
-    channel->__topic = topic;
-    std::string ret = RPL_TOPIC(channel->__name, msg.__client->__nickname);
-    send_message(msg.__client->__socket, ret);
+	if (client.getMessage()->getParamSize() == 1)
+	{
+		send_message(client.getSocket(), RPL_NOTOPIC(channel->getName()));
+		return;
+	}
+    std::string topic = *(++client.getMessage()->getParameters().begin());
+    channel->setTopic(topic);
+    std::string ret = RPL_TOPIC(channel->getName(), client.getNickname());
+    send_message(client.getSocket(), ret);
 }
 
 void Server::invite(Client &client) // RPL_AWAY

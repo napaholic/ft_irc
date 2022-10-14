@@ -67,6 +67,8 @@ class Channel
     void change_nick(std::string &old_nick, std::string &nick);
     void add_operater(std::string &str);
     void del_operator(std::string &str);
+	const std::string	getTopic();
+	void	setTopic(std::string topic);
 };
 
 #endif // FT_IRC_CHANNEL_HPP
