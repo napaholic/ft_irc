@@ -4,8 +4,6 @@
 
 ## Types of edition
 
-(Please remove irrelevant tags)
-
 - [ ] Bug fix (not modifying existing features)
 - [ ] New feature (not modifying existing features)
 - [ ] Changing feature (modifying existing feature or fixing bug)
@@ -15,3 +13,7 @@
 
 - [ ] Compile succeed
 - [ ] Envr diff with 42-cluster
+
+# MISC
+
+(Additional informations that wants to notice others.)
