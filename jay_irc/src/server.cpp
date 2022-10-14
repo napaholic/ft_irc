@@ -89,14 +89,6 @@ void Server::receive_message(Session &session, int fd)
             std::cout << "cmd by: " << tmp_client->getSocket() << " " << buf;
             CALL_MEMBER_FN(*this, __cmd_list[msg->getCommand()])(*tmp_client);
         }
-        else
-        {
-            tmp_channel = findChannel(tmp_client->getChannelName());
-            std::set<Client *>::iterator it = tmp_channel->__active_clients.begin();
-            while (it != tmp_channel->__active_clients.end())
-            {
-            }
-        }
     }
     /*
      * * 1. 파싱
