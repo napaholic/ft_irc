@@ -25,8 +25,40 @@ class Message;
 
 class Server
 {
+  private:
+    const std::string __port;
+    const std::string __password;
+    int __port_int;
+    std::set<Channel *> __channels;
+    std::map<unsigned long, void (Server::*)(Client &client)> __cmd_list;
+    std::set<Client *> __clients;
+
   public:
+    // Member functions
     Server(const std::string &port, const std::string &password);
+    ~Server();
+
+    // Server commands used by client
+    void pass(Client &client);
+    bool isErrorNick(std::string nick);
+    void newNickname(Client &client);
+    void changeNickname(Client &client);
+    void nick(Client &client);
+    void user(Client &client);
+    void quit(Client &client);
+    void join(Client &client);
+    void topic(Client &client);
+    void invite(Client &client);
+
+    // Element access
+    Client *findClient(std::string nick);
+    Client *findClient(int fd);
+    Channel *findChannel(std::string channel);
+
+    // Modifiers
+    void createChannel(const std::string &name, Client *client);
+
+    // Unknown functions
     void run(Session &session);
     void accept_client(Session &session);
     void receive_message(Session &session, int fd);
@@ -34,28 +66,6 @@ class Server
     void send_message(int fd, const char buf[]);
     void send_message(int fd, std::string str);
     void broad_cast(Session &session, char *buf, int fd);
-    Client *getClient(std::string nick);
-    Client *getClient(int fd);
-    Channel *getChannel(std::string channel);
-    bool isErrorNick(std::string nick);
-    void newNickname(Client &client);
-    void changeNickname(Client &client);
-    void pass(Client &client);
-    void nick(Client &client);
-    void user(Client &client);
-    void quit(Client &client);
-    void join(Client &client);
-    void topic(Client &client);
-    void invite(Client &client);
-    ~Server();
-
-  private:
-    const std::string __port;
-    const std::string __password;
-    int __port_int;
-    std::set<Channel *> 									                    __channels;
-    std::map<unsigned long, void (Server::*)(Client &client)> __cmd_list;
-    std::vector<Client *> __clients;
 };
 
 #endif // JAY_IRC_SERVER_H

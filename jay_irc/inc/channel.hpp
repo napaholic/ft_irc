@@ -51,9 +51,9 @@ public:
 private:
     std::string 							__name;
     std::string 							__topic;
-    std::list<std::string> 					__operator_list;
+    std::list<std::string&> 					__operator_list;
     std::set<Client *> 						__active_clients;
-    std::vector<std::string> 				__banned;
+    std::vector<std::string&> 				__banned;
     unsigned char 							__mode;
     std::string 							__key;
     
