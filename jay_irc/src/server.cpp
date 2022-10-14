@@ -14,7 +14,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::invite));
+    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("KICK"), &Server::KICK));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("MODE"), &Server::MODE));
     //    __cmd_list.insert(std::pair<unsigned long, (Server::*)()>(djb2("PRIVMSG"), &Server::PRIVMSG));
@@ -122,6 +123,13 @@ void Server::send_message(int fd, std::string str)
     if (send(fd, buf, strlen(buf), 0) == -1)
         return;
 } //좀 정의해야됨
+
+void Server::send_message(Channel *channel, std::string text)
+{
+    for (std::set<Client *>::iterator it = channel->getActiveClients().begin();
+    it != channel->getActiveClients().end(); ++it)
+        send_message((*it)->getSocket(), text);
+}
 
 void Server::broad_cast(Session &session, char *buf, int fd)
 {
@@ -398,49 +406,51 @@ std::vector<std::string> Server::split(std::string str, char Delimiter)
     return result;
 }
 
-void Server::privmsg(Message &msg)
+void Server::privmsg(Client &client)
 {
-    if (msg.__parameters.size() == 0)
-    {
-        send_message(msg.__client->__socket, ERR_NORECIPIENT("PRIVMSG"));
-        return;
-    }
-    if (msg.__parameters.size() == 1)
-    {
-        send_message(msg.__client->__socket, ERR_NOTEXTTOSEND);
-        return;
-    }
-    std::vector<std::string> targets = split(*msg.__parameters.begin(), ',');
-    std::string text = *(++msg.__parameters.begin());
+    Message &msg = *(client.getMessage());
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NORECIPIENT("PRIVMSG"));
+    if (msg.getParameters().size() == 1)
+        return send_message(client.getSocket(), ERR_NOTEXTTOSEND);
+
+    std::vector<std::string> targets = split(*msg.getParameters().begin(), ',');
+    std::string text = *(++msg.getParameters().begin());
 
     for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
     {
         std::string target = *it;
         if (target[0] == '#')
         {
-        } // sendToChannel;
-        else
-        {
-            if (getClient(target) == 0)
+            if (findChannel(target) == 0)
             {
-                send_message(msg.__client->__socket, ERR_NOSUCHNICK(target));
+                send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
                 continue;
             }
-            send_message(getClient(target)->__socket, text);
+            send_message(findChannel(target), text);
+        }
+        else
+        {
+            if (findClient(target) == 0)
+            {
+                send_message(client.getSocket(), ERR_NOSUCHNICK(target));
+                continue;
+            }
+            send_message(findClient(target)->getSocket(), text);
         }
     }
 }
 
-void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
-{
-    Channel *channel = findChannel(target);
-
-    if (channel == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
-    if (channel->isOperator(client.getNickname()) == false)
-        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
-
-}
+//void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
+//{
+//    Channel *channel = findChannel(target);
+//
+//    if (channel == NULL)
+//        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+//    if (channel->isOperator(client.getNickname()) == false)
+//        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
+//
+//}
 
 //void Server::mode(Client &client)
 //{

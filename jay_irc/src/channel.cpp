@@ -145,6 +145,11 @@ void Channel::setKey(const std::string &key)
     setMode(opt_k);
 }
 
+std::set<Client*> Channel::getActiveClients()
+{
+    return __active_clients;
+}
+
 //std::string Channel::sendUserList(std::string serverip, std::string nick)
 //{
 //    std::string a[] = {
@@ -163,7 +168,7 @@ void Channel::setKey(const std::string &key)
 //    return (t);
 //}
 
-Client    *Channel::getClient(std::string nick)
+Client    *Channel::findClient(std::string nick)
 {
     std::set<Client *>::iterator it = __active_clients.begin();
     while (it != __active_clients.end())
@@ -195,7 +200,7 @@ void	Channel::change_nick(std::string &old_nick, std::string &nick)
 		//if (isClient(nick))
 		//	return;
 		//findClientbyNick(old_nick);
-        getClient(old_nick)->__nickname = nick;
+        //findClient(old_nick)->__nickname = nick;
     }
     if (isBanned(old_nick))
     {

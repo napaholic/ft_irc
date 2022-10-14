@@ -49,6 +49,7 @@ class Server
     void join(Client &client);
     void topic(Client &client);
     void invite(Client &client);
+    void privmsg(Client &client);
 
     // Element access
     Client *findClient(std::string nick);
@@ -65,6 +66,7 @@ class Server
     void disconnect_client(Session &session, int fd);
     void send_message(int fd, const char buf[]);
     void send_message(int fd, std::string str);
+    void send_message(Channel *channel, std::string text);
     void broad_cast(Session &session, char *buf, int fd);
 };
 
