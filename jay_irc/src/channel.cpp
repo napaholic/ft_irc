@@ -228,3 +228,12 @@ void	Channel::del_operator(std::string &str)
     if ((it = std::find(__operator_list.begin(), __operator_list.end(), str)) != __operator_list.end())
         __operator_list.erase(it);
 }
+
+const std::string	Channel::getTopic()
+{
+	return __topic;
+}
+void	Channel::setTopic(std::string topic)
+{
+	__topic	= topic;
+}

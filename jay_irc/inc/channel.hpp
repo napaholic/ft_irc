@@ -34,6 +34,9 @@ public:
 	bool	isBanned(const std::string &nick);
 	
 	unsigned char get_permissions(const std::string &nick);
+	const std::string	getTopic();
+	void	setTopic(std::string topic);
+	
 	
 	void	setPermissions(Client *client, unsigned char perm);
 	
