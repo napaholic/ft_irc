@@ -19,10 +19,12 @@ class Message
     ~Message();
 
     // Element access
-	const std::vector<std::string> &getParameters() const;
-	const std::string combineParameters();
-	const unsigned long &getCommand() const;
-	int getParamSize();
+    const std::vector<std::string> &getParameters() const;
+    const unsigned long &getCommand() const;
+    int getParamSize();
+
+    // Others
+    const std::string combineParameters();
 };
 
 #endif
