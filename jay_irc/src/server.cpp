@@ -320,7 +320,7 @@ void Server::join(Client &client)
     if (channel == NULL)
     {
         createChannel(channel_name, &client);
-        channel.addOperator(&client);
+        channel->addOperator(&client);
     }
     else
         channel->addClient(&client);
@@ -340,7 +340,7 @@ void Server::part(Client &client)
     if (channel == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
     if (!channel->isClient(client.getNickname()))
-        return (send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
     else
         channel->eraseClient(&client);
 }
@@ -402,8 +402,7 @@ void Server::invite(Client &client) // RPL_AWAY
     send_message(client.getSocket(), RPL_INVITING(channel->getName(), nickname));
 }
 
-std::vector<std::string> Server::split(std::string str, char Delimiter)
-{
+std::vector<std::string> Server::splitPrivmsgTarget(std::string str, char Delimiter) {
     std::istringstream iss(str); // istringstream에 str을 담는다.
     std::string buffer;          // 구분자를 기준으로 절삭된 문자열이 담겨지는 버퍼
 
@@ -429,7 +428,7 @@ void Server::privmsg(Client &client)
     if (msg.getParameters().size() == 1)
         return send_message(client.getSocket(), ERR_NOTEXTTOSEND);
 
-    std::vector<std::string> targets = split(*msg.getParameters().begin(), ',');
+    std::vector<std::string> targets = splitPrivmsgTarget(*msg.getParameters().begin(), ',');
     std::string text = *(++msg.getParameters().begin());
 
     for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
@@ -464,7 +463,7 @@ void Server::notice(Client &client)
     if (msg.getParameters().size() == 1)
         return ;
 
-    std::vector<std::string> targets = split(*msg.getParameters().begin(), ',');
+    std::vector<std::string> targets = splitPrivmsgTarget(*msg.getParameters().begin(), ',');
     std::string text = *(++msg.getParameters().begin());
 
     for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)

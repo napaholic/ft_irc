@@ -54,7 +54,7 @@ class Server
     void mode(Client &client);
     void part(Client &client);
     void kick(Client &client);
-
+    std::vector<std::string> splitPrivmsgTarget(std::string str, char Delimiter);
 
 
     // Element access
@@ -65,6 +65,7 @@ class Server
     // Modifiers
     void createChannel(const std::string &name, Client *client);
 	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
+
 
     // Unknown functions
     void run(Session &session);
