@@ -293,7 +293,7 @@ void Server::quit(Client &client)
     for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
         if ((*it)->isClient(client.getNickname()))
-            (*it)->eraseClient(client.getNickname());
+            (*it)->eraseClient(&client);
     }
     send_message(__port_int, announce);
     close(client.getSocket());
@@ -313,26 +313,19 @@ void Server::join(Client &client)
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
 
-    for (std::vector<std::string>::const_iterator it = msg.getParameters().begin(); it != msg.getParameters().end();
-         ++it)
+    std::string channel_name = *msg.getParameters().begin();
+    if (channel_name[0] != '#')
+        return send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
+    Channel *channel = findChannel(channel_name);
+    if (channel == NULL)
     {
-        std::string channel_name = *it;
-        if (channel_name[0] != '#')
-        {
-            send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
-            continue;
-        }
-        Channel *channel = findChannel(channel_name);
-        if (channel == NULL)
-            createChannel(channel_name, &client);
-        else
-            channel->addClient(&client);
-        if (channel->__topic != "")
-        {
-            std::string ret = RPL_TOPIC(channel_name, client.getNickname());
-            send_message(client.getSocket(), ret);
-        }
+        createChannel(channel_name, &client);
+        channel.addOperator(&client);
     }
+    else
+        channel->addClient(&client);
+    if (channel->getTopic() != "")
+        return send_message(client.getSocket(), RPL_TOPIC(channel_name, client.getNickname()));
 }
 
 void Server::part(Client &client)
