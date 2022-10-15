@@ -371,24 +371,15 @@ void Server::kick(Client &client)
 void Server::topic(Client &client)
 {
 	if (client.getMessage()->getParamSize() == 0)
-	{
-		send_message(client.getSocket(), ERR_NEEDMOREPARAMS("TOPIC"));
-		return;
-	}
+		return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("TOPIC"));
 	Channel *channel = findChannel(*client.getMessage()->getParameters().begin());
     if (channel->isClient(client.getNickname()) == 0)
-    {
-        send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->getName()));
-    }
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->getName()));
 	if (client.getMessage()->getParamSize() == 1)
-	{
-		send_message(client.getSocket(), RPL_NOTOPIC(channel->getName()));
-		return;
-	}
+		return send_message(client.getSocket(), RPL_NOTOPIC(channel->getName()));
     std::string topic = *(++client.getMessage()->getParameters().begin());
     channel->setTopic(topic);
-    std::string ret = RPL_TOPIC(channel->getName(), client.getNickname());
-    send_message(client.getSocket(), ret);
+    send_message(client.getSocket(), RPL_TOPIC(channel->getName(), client.getNickname()));
 }
 
 void Server::invite(Client &client) // RPL_AWAY
