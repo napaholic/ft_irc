@@ -17,8 +17,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
 
@@ -346,10 +346,33 @@ void Server::part(Client &client)
     Channel *channel = findChannel(channel_name);
     if (channel == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
-    else if (!channel->isClient(client.getNickname()))
+    if (!channel->isClient(client.getNickname()))
         return (send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
     else
         channel->eraseClient(&client);
+}
+
+void Server::kick(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("KICK"));
+
+    std::string channel_name = *msg.getParameters().begin();
+    Client *targetClient = findClient(*(++msg.getParameters().begin()));
+
+    if (channel_name[0] != '#')
+        return send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
+    Channel *channel = findChannel(channel_name);
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+    if (!channel->isClient(targetClient->getNickname()))
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+    if (!channel->findOperator(client))
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(channel_name));
+    else
+        channel->eraseClient(targetClient);
 }
 
 void Server::topic(Client &client)

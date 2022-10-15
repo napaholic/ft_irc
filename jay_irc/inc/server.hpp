@@ -53,6 +53,7 @@ class Server
     void notice(Client &client);
     void mode(Client &client);
     void part(Client &client);
+    void kick(Client &client);
 
 
 
