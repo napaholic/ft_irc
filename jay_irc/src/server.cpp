@@ -485,26 +485,40 @@ void Server::notice(Client &client)
     }
 }
 
-//void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
-//{
-//    Channel *channel = findChannel(target);
-//
-//    if (channel == NULL)
-//        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
-//    if (channel->findOperator(client) == false)
-//        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
-//
-//}
-//
-//void Server::mode(Client &client)
-//{
-//     Message &msg = *(client.getMessage());
-//
-//    if (msg.getParameters().size() == 0)
-//        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
-//
-//    std::vector<std::string>::const_iterator params = msg.getParameters().begin();
-//    std::string target = *msg.getParameters().begin();
-//    if (target[0] == '#')
-//        return (modeChannel(target, client, params));
-//}
+void Server::modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param)
+{
+    Channel *channel = findChannel(target);
+	std::string option_o = *(++param);
+	std::string nickName = *(++(++param));
+
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+    if (channel->findOperator(client) == false)
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
+	if (channel->findClient(nickName) == NULL)
+		return send_message(client.getSocket(), ERR_NOTONCHANNEL(nickName));
+		
+	if (option_o == "+o")
+	{
+		channel->addOperator(channel->findClient(nickName));
+	}
+	else if (option_o == "-o")
+	{
+		channel->delOperator(channel->findClient(nickName));
+	}
+	else
+		return send_message(client.getSocket(), ERR_UNKNOWNMODE(option_o));
+}
+
+void Server::mode(Client &client)
+{
+     Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+
+    std::vector<std::string>::iterator params = msg.getParameters().begin();
+    std::string target = *msg.getParameters().begin();
+    if (target[0] == '#')
+        return (modeChannel(target, client, params));
+}
