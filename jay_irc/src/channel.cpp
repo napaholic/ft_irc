@@ -24,7 +24,10 @@ void    Channel::addClient(Client *client)
     else
         std::cout << "Could not add client\n";
 }
-
+void	Channel::eraseClient(Client *client)
+{
+        __active_clients.erase(client);
+}
 bool	Channel::isClient(const std::string &nick)
 {
     for(std::set<Client *>::iterator it = __active_clients.begin();
@@ -35,6 +38,7 @@ bool	Channel::isClient(const std::string &nick)
     }
     return (0);
 }
+
 
 bool	Channel::isBanned(const std::string &nick)
 {
@@ -47,20 +51,7 @@ bool	Channel::isBanned(const std::string &nick)
     return (0);
 }
 
-void	Channel::eraseClient(const std::string &nick)
-{
-    if (!isClient(nick))
-        return;
-    for(std::set<Client *>::iterator it = __active_clients.begin();
-         it != __active_clients.end(); ++it)
-    {
-        if ((*it)->getNickname() == nick)
-        {
-			__active_clients.erase(it);
-            return ;
-        }
-    }
-}
+
 
 unsigned char Channel::get_permissions(const std::string &nick)
 {
@@ -75,30 +66,30 @@ unsigned char Channel::get_permissions(const std::string &nick)
     return (opt_err);
 }
 
-void	Channel::addBanned(const std::string &nick)
-{
-    if (!isBanned(nick))
-    {
-        if (isClient(nick))
-            eraseClient(nick);
-        __banned.push_back(nick);
-    }
-}
-
-void	Channel::eraseBanned(const std::string &nick)
-{
-    if (!isBanned(nick))
-        return;
-    for(std::vector<std::string>::iterator it = __banned.begin();
-         it != __banned.end(); ++it)
-    {
-        if (*it == nick)
-        {
-            it = __banned.erase(it);
-            return ;
-        }
-    }
-}
+//void	Channel::addBanned(const std::string &nick)
+//{
+//    if (!isBanned(nick))
+//    {
+//        if (isClient(nick))
+//            eraseClient(nick);
+//        __banned.push_back(nick);
+//    }
+//}
+//
+//void	Channel::eraseBanned(const std::string &nick)
+//{
+//    if (!isBanned(nick))
+//        return;
+//    for(std::vector<std::string>::iterator it = __banned.begin();
+//         it != __banned.end(); ++it)
+//    {
+//        if (*it == nick)
+//        {
+//            it = __banned.erase(it);
+//            return ;
+//        }
+//    }
+//}
 
 Client *Channel::findClient(std::string nick)
 {
