@@ -461,7 +461,7 @@ void Server::notice(Client &client)
     }
 }
 
-void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
+void Server::modeChannel(std::string target, Client &client, std::vector<std::string>::iterator parameters)
 {
     Channel *channel = findChannel(target);
 
@@ -469,18 +469,19 @@ void Server::modeChannel(std::string target, Client &client, std::vector<std::st
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
     if (channel->findOperator(client) == false)
         return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
-
+	
 }
 
 void Server::mode(Client &client)
 {
      Message &msg = *(client.getMessage());
 
-    if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+	if (msg.getParamSize() < 3)
+		return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
 
-    std::vector<std::string>::const_iterator params = msg.getParameters().begin();
+    std::vector<std::string>::iterator params = msg.getParameters().begin();
     std::string target = *msg.getParameters().begin();
     if (target[0] == '#')
         return (modeChannel(target, client, params));
+	
 }

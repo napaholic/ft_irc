@@ -60,6 +60,7 @@ class Server
 
     // Modifiers
     void createChannel(const std::string &name, Client *client);
+	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator parameters);
 
     // Unknown functions
     void run(Session &session);
