@@ -499,7 +499,6 @@ void Server::modeChannel(std::string target, Client &client, std::vector<std::st
     Channel *channel = findChannel(target);
 	std::string option_o = *(++param);
 	std::string nickName = *(++(++param));
-	
 
     if (channel == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
@@ -510,11 +509,11 @@ void Server::modeChannel(std::string target, Client &client, std::vector<std::st
 		
 	if (option_o == "+o")
 	{
-		channel->add_operater(nickName);
+		channel->addOperator(channel->findClient(nickName));
 	}
 	else if (option_o == "-o")
 	{
-		channel->del_operator(nickName);
+		channel->delOperator(channel->findClient(nickName));
 	}
 	else
 		return send_message(client.getSocket(), ERR_UNKNOWNMODE(option_o));
