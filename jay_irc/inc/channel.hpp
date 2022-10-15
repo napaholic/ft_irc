@@ -50,8 +50,9 @@ class Channel
     void eraseBanned(const std::string &nick);
 
     // Lookups
-    Client *findClient(std::string nick);
-    bool Channel::findOperator(const Client &client) const;
+    Client      *findClient(std::string nick);
+    Client      *findClient(Client *client);
+    bool        findOperator(const Client &client) const;
 
     // Identifiers
     bool isClient(const std::string &nick);
@@ -65,9 +66,8 @@ class Channel
     void printChannel();
     // std::string	sendUserList(std::string serverip, std::string nick);
 
-    void change_nick(std::string &old_nick, std::string &nick);
-    void add_operater(std::string &str);
-    void del_operator(std::string &str);
+    void addOperator(Client *client);
+    void delOperator(Client *client);
 	const std::string	getTopic();
 	void	setTopic(std::string topic);
 };
