@@ -219,3 +219,8 @@ const std::string &Channel::getName() const
 {
     return __name;
 }
+
+const std::set<Client *> &Channel::getActiveClients() const
+{
+    return __active_clients;
+}

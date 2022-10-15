@@ -38,6 +38,7 @@ class Channel
 
     // Element access
     const std::string &getName() const;
+    const std::set<Client *> &getActiveClients() const;
 
     // Modifiers
     void setMode(unsigned char mode);
