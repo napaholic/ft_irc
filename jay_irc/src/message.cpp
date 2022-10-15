@@ -21,9 +21,14 @@ Message::~Message()
 {
 }
 
-const std::vector<std::string> &Message::getParameters() const
+const std::vector<std::string> Message::getParameters() const
 {
     return __parameters;
+}
+
+std::vector<std::string> Message::getParameters()
+{
+	return __parameters;
 }
 
 const unsigned long &Message::getCommand() const
