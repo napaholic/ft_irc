@@ -45,8 +45,8 @@ class Channel
     void setKey(std::string const &key);
 
     void addClient(Client *client);
+    void eraseClient(Client *client);
     void addBanned(const std::string &nick);
-    void eraseClient(const std::string &nick);
     void eraseBanned(const std::string &nick);
 
     // Lookups

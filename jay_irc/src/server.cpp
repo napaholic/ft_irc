@@ -335,6 +335,23 @@ void Server::join(Client &client)
     }
 }
 
+void Server::part(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("PART"));
+
+    std::string channel_name = *msg.getParameters().begin();
+    Channel *channel = findChannel(channel_name);
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+    else if (!channel->isClient(client.getNickname()))
+        return (send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+    else
+        channel->eraseClient(&client);
+}
+
 void Server::topic(Client &client)
 {
 	if (client.getMessage()->getParamSize() == 0)
@@ -461,26 +478,26 @@ void Server::notice(Client &client)
     }
 }
 
-void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
-{
-    Channel *channel = findChannel(target);
-
-    if (channel == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
-    if (channel->findOperator(client) == false)
-        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
-
-}
-
-void Server::mode(Client &client)
-{
-     Message &msg = *(client.getMessage());
-
-    if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
-
-    std::vector<std::string>::const_iterator params = msg.getParameters().begin();
-    std::string target = *msg.getParameters().begin();
-    if (target[0] == '#')
-        return (modeChannel(target, client, params));
-}
+//void Server::modeChannel(std::string target, Client &client, std::vector<std::string> &parameters)
+//{
+//    Channel *channel = findChannel(target);
+//
+//    if (channel == NULL)
+//        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+//    if (channel->findOperator(client) == false)
+//        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
+//
+//}
+//
+//void Server::mode(Client &client)
+//{
+//     Message &msg = *(client.getMessage());
+//
+//    if (msg.getParameters().size() == 0)
+//        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+//
+//    std::vector<std::string>::const_iterator params = msg.getParameters().begin();
+//    std::string target = *msg.getParameters().begin();
+//    if (target[0] == '#')
+//        return (modeChannel(target, client, params));
+//}
