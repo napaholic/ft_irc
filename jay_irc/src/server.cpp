@@ -17,8 +17,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
 
@@ -335,6 +335,46 @@ void Server::join(Client &client)
     }
 }
 
+void Server::part(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("PART"));
+
+    std::string channel_name = *msg.getParameters().begin();
+    Channel *channel = findChannel(channel_name);
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+    if (!channel->isClient(client.getNickname()))
+        return (send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+    else
+        channel->eraseClient(&client);
+}
+
+void Server::kick(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("KICK"));
+
+    std::string channel_name = *msg.getParameters().begin();
+    Client *targetClient = findClient(*(++msg.getParameters().begin()));
+
+    if (channel_name[0] != '#')
+        return send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
+    Channel *channel = findChannel(channel_name);
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+    if (!channel->isClient(targetClient->getNickname()))
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+    if (!channel->findOperator(client))
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(channel_name));
+    else
+        channel->eraseClient(targetClient);
+}
+
 void Server::topic(Client &client)
 {
 	if (client.getMessage()->getParamSize() == 0)
@@ -461,27 +501,41 @@ void Server::notice(Client &client)
     }
 }
 
-void Server::modeChannel(std::string target, Client &client, std::vector<std::string>::iterator parameters)
+void Server::modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param)
 {
     Channel *channel = findChannel(target);
+	std::string option_o = *(++param);
+	std::string nickName = *(++(++param));
+	
 
     if (channel == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
     if (channel->findOperator(client) == false)
         return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
-	
+	if (channel->findClient(nickName) == NULL)
+		return send_message(client.getSocket(), ERR_NOTONCHANNEL(nickName));
+		
+	if (option_o == "+o")
+	{
+		channel->add_operater(nickName);
+	}
+	else if (option_o == "-o")
+	{
+		channel->del_operator(nickName);
+	}
+	else
+		return send_message(client.getSocket(), ERR_UNKNOWNMODE(option_o));
 }
 
 void Server::mode(Client &client)
 {
      Message &msg = *(client.getMessage());
 
-	if (msg.getParamSize() < 3)
-		return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+    if (msg.getParameters().size() == 0)
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
 
     std::vector<std::string>::iterator params = msg.getParameters().begin();
     std::string target = *msg.getParameters().begin();
     if (target[0] == '#')
         return (modeChannel(target, client, params));
-	
 }

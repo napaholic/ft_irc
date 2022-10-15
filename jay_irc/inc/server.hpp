@@ -52,6 +52,10 @@ class Server
     void privmsg(Client &client);
     void notice(Client &client);
     void mode(Client &client);
+    void part(Client &client);
+    void kick(Client &client);
+
+
 
     // Element access
     Client *findClient(std::string nick);
@@ -60,7 +64,7 @@ class Server
 
     // Modifiers
     void createChannel(const std::string &name, Client *client);
-	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator parameters);
+	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
 
     // Unknown functions
     void run(Session &session);

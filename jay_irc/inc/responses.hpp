@@ -35,6 +35,6 @@
 #define ERR_RESTRICTED "Your connection is restricted!"                                                         // 484
 #define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag"                                                                // 501
 #define ERR_USERSDONTMATCH "Cannot change mode for other users"
-RPL_CHANNELMODEIS
+#define ERR_UNKNOWNMODE(unknownMode) (unknownMode + " :is unknown mode char to me")
 // 502
 #endif
