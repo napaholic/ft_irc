@@ -51,6 +51,7 @@ class Server
     void invite(Client &client);
     void privmsg(Client &client);
     void notice(Client &client);
+    void mode(Client &client);
 
     // Element access
     Client *findClient(std::string nick);
