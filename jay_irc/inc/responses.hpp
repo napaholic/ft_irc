@@ -24,5 +24,8 @@
 #define ERR_BADCHANMASK(channel) (":ft_irc 476 " + channel + " :Bad Channel Mask")
 #define ERR_CHANOPRIVSNEEDED(channel) (":ft_irc 482 " + channel + " :You're not channel operator")
 #define ERR_UNKNOWNMODE(unknownMode) (":ft_irc 472 " + unknownMode + " :is unknown mode char to me")
+#define RPL_NAMREPLYTMP(channel, nicks) (channel + " :" + nicks)
+#define RPL_NAMREPLY(lineByLineNamReply) (":ft_irc 353" + lineByLineNamReply)								//353
+#define RPL_ENDOFNAMES(channel) (":ft_irc 366 " + channel + " :End of /NAMES list")
 
 #endif
