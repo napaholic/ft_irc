@@ -57,16 +57,14 @@ class Server
     void list(Client &client);
     std::vector<std::string> splitPrivmsgTarget(std::string str, char Delimiter);
 
-
     // Element access
     Client *findClient(std::string nick);
     Client *findClient(int fd);
     Channel *findChannel(std::string channel);
 
     // Modifiers
-    void createChannel(const std::string &name, Client *client);
-	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
-
+    Channel *createChannel(const std::string &name, Client *client);
+    void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
 
     // Unknown functions
     void run(Session &session);
