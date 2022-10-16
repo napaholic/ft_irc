@@ -20,9 +20,10 @@ class Message
 
     // Element access
     const std::vector<std::string> getParameters() const;
-	std::vector<std::string> getParameters();
+    std::vector<std::string> getParameters();
     const unsigned long &getCommand() const;
     int getParamSize() const;
+    const std::string &getPrefix() const;
 
     // Others
     const std::string combineParameters();

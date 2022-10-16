@@ -65,8 +65,8 @@ class Server
     Channel *findChannel(std::string channel);
 
     // Modifiers
-    void createChannel(const std::string &name, Client *client);
-	void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
+    Channel *createChannel(const std::string &name, Client *client);
+    void modeChannel(std::string target, Client &client, std::vector<std::string>::iterator param);
 
 
     // Unknown functions
