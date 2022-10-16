@@ -55,6 +55,7 @@ class Server
     void part(Client &client);
     void kick(Client &client);
     void list(Client &client);
+	void names(Client &client);
     std::vector<std::string> splitPrivmsgTarget(std::string str, char Delimiter);
 
 

@@ -14,8 +14,9 @@
 #define RPL_LISTSTART "Channel :Users  Name"
 #define RPL_LIST(channel, topic) (channel + ":" + topic)
 #define RPL_LISTEND ":End of /LIST"
-#define RPL_NAMREPLY(channel, nicks) (channel + " :")
-
+#define RPL_NAMREPLYTMP(channel, nicks) (channel + " :" + nicks)
+#define RPL_NAMREPLY(lineByLineNamReply) (":ft_irc 353" + lineByLineNamReply)								//353
+#define RPL_ENDOFNAMES(channel) (":ft_irc 366 " + channel + " :End of /NAMES list")							//366
 //#define ERR_NOSUCHNICK(nick) std::string(nick + (" :No such nick")                                                          // 401
 #define ERR_NOSUCHNICK(nick) (nick + " :No such nick")                                                          // 401
 #define ERR_NOSUCHCHANNEL(channel) (channel + " :No such channel")                                              // 403

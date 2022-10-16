@@ -19,7 +19,7 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
@@ -538,3 +538,34 @@ void Server::list(Client &client)
     send_message(client.getSocket(), RPL_LISTEND);
 }
 
+void Server::names(Client &client)
+{
+	Message &msg = *(client.getMessage());
+	std::string result = "";
+	Channel *tmp_ch;
+	
+	if (msg.getParameters().size() == 0)
+		return list(client);
+	std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
+	if ((*params)[0] == '#')
+	{
+		std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
+		std::vector<std::string>::iterator it = channelList.begin();
+		while (it != channelList.end())
+		{
+			if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
+			{
+				result += tmp_ch->listingActiveClient(client);
+			}
+			else
+			{
+				result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
+				send_message(client.getSocket(), result);
+				return ;
+			}
+			result += "\n";
+			++it;
+		}
+		send_message(client.getSocket(), RPL_NAMREPLY(result));
+	}
+}

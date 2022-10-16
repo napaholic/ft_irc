@@ -54,7 +54,7 @@ class Channel
     Client      *findClient(std::string nick);
     Client      *findClient(Client *client);
     bool        findOperator(const Client &client) const;
-	void		listingActiveClient(Client &client) const;
+	std::string	listingActiveClient(Client &client) const;
 
     // Identifiers
     bool isClient(const std::string &nick);
