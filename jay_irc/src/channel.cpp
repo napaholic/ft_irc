@@ -7,7 +7,7 @@ Channel::Channel(const std::string &name, Client *oper)
     : __name(name), __topic(""), __mode(0), __key("")
 {
     addClient(oper);
-    setPermissions(oper, opt_o);
+    //setPermissions(oper, opt_o);
 }
 
 Channel::Channel(const std::string &name)
@@ -18,7 +18,7 @@ Channel::~Channel() {}
 
 void    Channel::addClient(Client *client)
 {
-    if (!isClient(client->getNickname()) && !isBanned(client->getNickname()))
+    if (!isClient(client->getNickname()))//&& !isBanned(client->getNickname()))
 
 		__active_clients.insert(__active_clients.begin(), client);
     else
@@ -40,17 +40,17 @@ bool	Channel::isClient(const std::string &nick)
 }
 
 
-bool	Channel::isBanned(const std::string &nick)
-{
-    for(std::vector<std::string>::iterator it = __banned.begin();
-         it != __banned.end(); ++it)
-    {
-        if (*it == nick)
-            return (1);
-    }
-    return (0);
-}
-
+//bool	Channel::isBanned(const std::string &nick)
+//{
+//    for(std::vector<std::string>::iterator it = __banned.begin();
+//         it != __banned.end(); ++it)
+//    {
+//        if (*it == nick)
+//            return (1);
+//    }
+//    return (0);
+//}
+//
 
 
 //unsigned char Channel::get_permissions(const std::string &nick)
@@ -107,20 +107,20 @@ void	Channel::setMode(unsigned char mode)
     __mode |= mode;
 }
 
-void Channel::printChannel()
-{
-    for (std::set<Client *>::iterator it = __active_clients.begin(); it != __active_clients.end(); ++it)
-    {
-        std::cout << "-:" << (*it)->getNickname() << "\t\n";
-    }
-    std::cout << "-:"
-              << "channel operator list" << std::endl;
-    for (std::list<std::string>::iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
-    {
-        std::cout << (*it) << " is operator"
-                  << "\t\n";
-    }
-}
+//void Channel::printChannel()
+//{
+//    for (std::set<Client *>::iterator it = __active_clients.begin(); it != __active_clients.end(); ++it)
+//    {
+//        std::cout << "-:" << (*it)->getNickname() << "\t\n";
+//    }
+//    std::cout << "-:"
+//              << "channel operator list" << std::endl;
+//    for (std::list<std::string>::iterator it = __operator_list.begin(); it != __operator_list.end(); ++it)
+//    {
+//        std::cout << (*it) << " is operator"
+//                  << "\t\n";
+//    }
+//}
 
 void Channel::setKey(const std::string &key)
 {

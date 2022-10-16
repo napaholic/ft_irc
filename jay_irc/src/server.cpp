@@ -200,7 +200,7 @@ Channel *Server::findChannel(std::string channel)
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
-        if ((*it)->__name == channel)
+        if ((*it)->getName() == channel)
             return (*it);
         ++it;
     }
