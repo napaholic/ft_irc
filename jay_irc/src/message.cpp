@@ -28,7 +28,7 @@ const std::vector<std::string> Message::getParameters() const
 
 std::vector<std::string> Message::getParameters()
 {
-	return __parameters;
+    return __parameters;
 }
 
 const unsigned long &Message::getCommand() const
@@ -38,17 +38,22 @@ const unsigned long &Message::getCommand() const
 
 const std::string Message::combineParameters()
 {
-	std::string combinedParam;
-	for (std::vector<std::string>::iterator it = __parameters.begin(); it != __parameters.end(); ++it)
-	{
-		combinedParam += (*it);
-		if (it != --__parameters.end())
-			combinedParam += " ";
-	}
-	return combinedParam;
+    std::string combinedParam;
+    for (std::vector<std::string>::iterator it = __parameters.begin(); it != __parameters.end(); ++it)
+    {
+        combinedParam += (*it);
+        if (it != --__parameters.end())
+            combinedParam += " ";
+    }
+    return combinedParam;
 }
 
 int Message::getParamSize() const
 {
-	return __parameters.size();
+    return __parameters.size();
+}
+
+const std::string &Message::getPrefix() const
+{
+    return __prefix;
 }

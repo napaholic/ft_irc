@@ -1,5 +1,5 @@
 #ifndef RESPONSES_HPP
-# define RESPONSES_HPP
+#define RESPONSES_HPP
 
 #include <string.h>
 #define RPL_WELCOME(nick) (":ft_irc 001 " + nick + " :Welcome to the Internet Relay Network")

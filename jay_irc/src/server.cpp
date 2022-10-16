@@ -129,9 +129,9 @@ void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
-    //std::cout << buf << std::endl;
+    // std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
-        return ;
+        return;
 } //좀 정의해야됨
 
 void Server::send_message(Channel *channel, std::string text)
@@ -542,7 +542,8 @@ void Server::list(Client &client)
 
     if (__channels.size() == 0)
         ;
-    else if (msg.getParameters().size() == 1) {
+    else if (msg.getParameters().size() == 1)
+    {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
         //send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
