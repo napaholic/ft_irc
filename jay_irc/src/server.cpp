@@ -20,7 +20,7 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
     //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     //  map<long long, class::method>
@@ -520,4 +520,20 @@ void Server::mode(Client &client)
     std::string target = *msg.getParameters().begin();
     if (target[0] == '#')
         return (modeChannel(target, client, params));
+}
+
+void Server::list(Client &client)
+{
+    Message &msg = *(client.getMessage());
+
+    if (msg.getParameters().size() == 1) {
+        std::string target = *msg.getParameters().begin();
+        Channel *channel = findChannel(target);
+        send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
+    }
+    else{
+        for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+            send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
+    }
+    send_message(client.getSocket(), RPL_LISTEND);
 }
