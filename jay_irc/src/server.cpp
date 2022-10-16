@@ -521,3 +521,4 @@ void Server::mode(Client &client)
     if (target[0] == '#')
         return (modeChannel(target, client, params));
 }
+
