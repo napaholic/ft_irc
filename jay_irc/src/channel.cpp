@@ -173,6 +173,25 @@ bool Channel::findOperator(const Client &client) const
     return false;
 }
 
+std::string	Channel::listingActiveClient(Client &client) const
+{
+	std::string str = "";
+	std::set<Client *>::iterator it = __active_clients.begin();
+	while (it != __active_clients.end())
+	{
+		if ((**it) == client)
+		{
+			str = str + " @" + (*it)->getNickname();
+		}
+		else
+		{
+			str = str + " " + (*it)->getNickname();
+		}
+		++it;
+	}
+	return RPL_NAMREPLYTMP(this->getName(), str);
+}
+
 // Need to fix add_del operator has Client * parameter.
 
 void Channel::addOperator(Client *client)
