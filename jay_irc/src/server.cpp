@@ -118,16 +118,20 @@ void Server::disconnect_client(Session &session, int fd)
 
 void Server::send_message(int fd, const char buf[])
 {
-    if (send(fd, buf, strlen(buf), 0) == -1)
-        return;
+    //char *tmp = strcpy(tmp, buf);
+    //strcat(tmp,"\r\n");
+    //if (send(fd, tmp, strlen(tmp), 0) == -1)
+    //    return;
+    send_message(fd, std::string(buf));
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
+    //std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
-        return;
+        return ;
 } //좀 정의해야됨
 
 void Server::send_message(Channel *channel, std::string text)
@@ -314,7 +318,9 @@ Channel *Server::createChannel(const std::string &name, Client *client)
 
 void Server::join(Client &client)
 {
+    std::cout << "a";
     Message &msg = *(client.getMessage());
+    std::cout << "b";
 
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
@@ -530,16 +536,17 @@ void Server::mode(Client &client)
 
 void Server::list(Client &client)
 {
+    send_message(client.getSocket(), RPL_LISTSTART);
     Message &msg = *(client.getMessage());
 
-    if (msg.getParameters().size() == 1)
-    {
+    if (__channels.size() == 0)
+        ;
+    else if (msg.getParameters().size() == 1) {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
         send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
     }
-    else
-    {
+    else {
         for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
             send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
     }
