@@ -12,7 +12,7 @@
 
 #define ERR_NOSUCHNICK(nick) (":ft_irc 401 " + nick + " :No such nick")
 #define ERR_NOSUCHCHANNEL(channel) (":ft_irc 403 " + channel + " :No such channel/channel")
-#define ERR_NORECIPIENT(command) std::string(":ft_irc 401 ").append(std::string("No recipient given ").append(command))                                     // 411
+#define ERR_NORECIPIENT(command) std::string(":ft_irc 401 ").append(std::string("No recipient given ").append(command))
 #define ERR_NOTEXTTOSEND ":ft_irc 412 :No text to send"
 #define ERR_NONICKNAMEGIVEN ":ft_irc 431 :No nickname given"
 #define ERR_ERRONEUSNICKNAME(nick) (":ft_irc 432 " + nick + " :Erroneous nickname")
