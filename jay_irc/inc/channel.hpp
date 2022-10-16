@@ -23,7 +23,8 @@ class Channel
     std::string __topic;
     std::set<Client *> __operator_list;
     std::set<Client *> __active_clients;
-    //std::vector<std::string &> __banned;
+    //std::vector<std::stri ng &> __banned;
+	std::Client &__hostClient const;
     unsigned char __mode;
     std::string __key;
 
@@ -53,6 +54,7 @@ class Channel
     Client      *findClient(std::string nick);
     Client      *findClient(Client *client);
     bool        findOperator(const Client &client) const;
+	void		listingActiveClient(Client &client) const;
 
     // Identifiers
     bool isClient(const std::string &nick);
