@@ -23,7 +23,7 @@ class Channel
     std::string __topic;
     std::set<Client *> __operator_list;
     std::set<Client *> __active_clients;
-	std::Client &__hostClient const;
+	Client &__hostClient;
     // std::vector<std::string &> __banned;
     unsigned char __mode;
     std::string __key;

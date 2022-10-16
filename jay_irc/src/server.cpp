@@ -116,11 +116,11 @@ void Server::disconnect_client(Session &session, int fd)
 
 void Server::send_message(int fd, const char buf[])
 {
-    // char *tmp = strcpy(tmp, buf);
-    // strcat(tmp,"\r\n");
-    // if (send(fd, tmp, strlen(tmp), 0) == -1)
-    //     return;
-    send_message(fd, std::string(buf));
+    char *tmp = strcpy(tmp, buf);
+    strcat(tmp,"\r\n");
+    if (send(fd, tmp, strlen(tmp), 0) == -1)
+        return;
+    //send_message(fd, std::string(buf));
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
@@ -290,6 +290,7 @@ void Server::user(Client &client)
     client.setRealname(*(++(++(++msg.getParameters().begin()))));
     if (client.allowClient())
         send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
+    //send_message(client.getSocket(), ":aaaa 001 a :Welcome to the Internet Relay Network");
 }
 
 void Server::quit(Client &client)
@@ -526,10 +527,9 @@ void Server::mode(Client &client)
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
 
-    std::vector<std::string>::iterator params = msg.getParameters().begin();
     std::string target = *msg.getParameters().begin();
     if (target[0] == '#')
-        return (modeChannel(target, client, params));
+        return (modeChannel(target, client, msg.getParameters().begin()));
 }
 
 void Server::list(Client &client)
@@ -543,12 +543,11 @@ void Server::list(Client &client)
     {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
-        send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
+        //send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
     }
-    else
-    {
-        for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-            send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
+    else {
+        //for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+          //  send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
     }
     send_message(client.getSocket(), RPL_LISTEND);
 }

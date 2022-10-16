@@ -3,14 +3,10 @@
 //
 #include "../inc/channel.hpp"
 
-Channel::Channel(const std::string &name, Client *oper) : __name(name), __topic(""), __mode(0), __key("")
+Channel::Channel(const std::string &name, Client *oper) : __name(name), __topic(""), __mode(0), __key(""), __hostClient(*oper)
 {
     addClient(oper);
     // setPermissions(oper, opt_o);
-}
-
-Channel::Channel(const std::string &name) : __name(name), __topic(""), __mode(0), __key("")
-{
 }
 
 Channel::~Channel()
