@@ -544,9 +544,9 @@ void Server::list(Client &client)
     else if (msg.getParameters().size() == 1) {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
+        send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
     }
-    else
-    {
+    else {
         for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
             send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
     }
