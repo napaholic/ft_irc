@@ -132,11 +132,14 @@ void Server::send_message(int fd, std::string str)
         return;
 } //좀 정의해야됨
 
-void Server::send_message(Channel *channel, std::string text)
+void Server::send_message(Channel *channel, Client *client,  std::string text)
 {
     for (std::set<Client *>::iterator it = channel->getActiveClients().begin(); it != channel->getActiveClients().end();
-         ++it)
+         ++it) {
+        if (findClient((*it)->getSocket()) == client)
+            continue;
         send_message((*it)->getSocket(), text);
+    }
 }
 
 void Server::broad_cast(Session &session, char *buf, int fd)
@@ -451,7 +454,7 @@ void Server::privmsg(Client &client)
                 send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
                 continue;
             }
-            send_message(findChannel(target), text);
+            send_message(findChannel(target), &client, client.makeReply());
         }
         else
         {
@@ -460,7 +463,7 @@ void Server::privmsg(Client &client)
                 send_message(client.getSocket(), ERR_NOSUCHNICK(target));
                 continue;
             }
-            send_message(findClient(target)->getSocket(), text);
+            send_message(findClient(target)->getSocket(), client.makeReply());
         }
     }
 }
@@ -483,13 +486,13 @@ void Server::notice(Client &client)
         {
             if (findChannel(target) == 0)
                 continue;
-            send_message(findChannel(target), text);
+            send_message(findChannel(target), &client, client.makeReply());
         }
         else
         {
             if (findClient(target) == 0)
                 continue;
-            send_message(findClient(target)->getSocket(), text);
+            send_message(findClient(target)->getSocket(), client.makeReply());
         }
     }
 }
