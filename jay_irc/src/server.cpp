@@ -383,12 +383,13 @@ void Server::kick(Client &client)
     Channel *channel = findChannel(channel_name);
     if (channel == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(user, channel_name));
-    if (!channel->isClientInChannel(client))
+    if (targetClient == NULL)
         return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel_name));
-    if (!channel->findOperator(client))
+    if (!channel->findOperator(*targetClient))
         return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(user, channel_name));
     else
     {
+        send_message(client.getSocket(), client.makeReply());
         channel->eraseClient(targetClient);
     }
 }
