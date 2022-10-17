@@ -212,8 +212,8 @@ Channel *Server::findChannel(std::string channel)
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
-		std::cout << "channel name is : " << (*it)->getName() << "\n" << std::endl;
-		std::cout << "argument's name is : " << channel << "\n" << std::endl;
+        std::cout << "channel name is : " << (*it)->getName() << "\n" << std::endl;
+        std::cout << "argument's name is : " << channel << "\n" << std::endl;
         if ((*it)->getName() == channel)
             return (*it);
         ++it;
@@ -417,31 +417,6 @@ void debug(const std::string &msg)
 
 void Server::invite(Client &client) // RPL_AWAY
 {
-    debug("Enter Server::invite()");
-    Message &msg = *(client.getMessage());
-    std::string user = client.getNickname();
-
-    debug("Enter Server::invite() line 422");
-    if (msg.getParameters().size() < 2)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "INVITE"));
-    debug("Enter Server::invite() line 425");
-    std::string nickname = *msg.getParameters().begin();
-    Client *invitee = findClient(nickname);
-    debug("Enter Server::invite() line 427");
-    if (invitee == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
-    debug("Enter Server::invite() line 430");
-    debug(*(++msg.getParameters().begin()));
-    Channel *channel = findChannel(*(++msg.getParameters().begin()));
-    if (channel == NULL)
-        return;
-    debug("Enter Server::invite() line 432");
-    if (channel->isClientInChannel(*invitee) == true)
-        return send_message(client.getSocket(), ERR_USERONCHANNEL(channel->getName(), invitee->getNickname()));
-    debug("Enter Server::invite() line 435");
-    channel->addClient(invitee);
-    debug("Enter Server::invite() line 437");
-    send_message(client.getSocket(), RPL_INVITING(channel->getName(), invitee->getNickname()));
 }
 
 std::vector<std::string> Server::splitPrivmsgTarget(std::string str, char Delimiter)
@@ -607,18 +582,19 @@ void Server::names(Client &client)
     {
         std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
         std::vector<std::string>::iterator it = channelList.begin();
-		std::string a = (*it).substr(1, (*it).length() - 1);
-		std::cout << a << std::endl;
-		std::cout << "====" << std::endl;
+        std::string a = (*it).substr(1, (*it).length() - 1);
+        std::cout << a << std::endl;
+        std::cout << "====" << std::endl;
         while (it != channelList.end())
         {
             if ((tmp_ch = findChannel(*it)) != NULL)
             {
-				send_message(client.getSocket(), RPL_NAMREPLY(client.getNickname() , tmp_ch->listingActiveClient(client)));
+                send_message(client.getSocket(),
+                             RPL_NAMREPLY(client.getNickname(), tmp_ch->listingActiveClient(client)));
             }
-			result = RPL_ENDOFNAMES(client.getNickname(), *it);
-			send_message(client.getSocket(), result);
-			++it;
-		}
+            result = RPL_ENDOFNAMES(client.getNickname(), *it);
+            send_message(client.getSocket(), result);
+            ++it;
+        }
     }
 }
