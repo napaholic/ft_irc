@@ -13,8 +13,6 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"),
-    //&Server::invite));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
@@ -22,7 +20,6 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"),
     //&Server::names));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));
 
@@ -68,10 +65,8 @@ void Server::receive_message(Session &session, int fd)
     ssize_t size;
     char buf[510];
     Client *tmp_client;
-    Channel *tmp_channel;
     Message *msg;
-    // map<string, int> a;
-    // a["KICK"]
+
 
     while ((size = recv(fd, buf, 512, 0)) == -1 && errno != EINTR)
         ;
@@ -90,7 +85,7 @@ void Server::receive_message(Session &session, int fd)
         tmp_client = findClient(fd);
         tmp_client->setMessage(buf);
         msg = tmp_client->getMessage();
-        // std::cout << buf;
+        std::cout << "buff:" << buf;
         // broad_cast(session, buf, fd);
         if (__cmd_list.find(msg->getCommand()) != __cmd_list.end())
         {
@@ -112,28 +107,18 @@ void Server::receive_message(Session &session, int fd)
 }
 
 void Server::disconnect_client(Session &session, int fd)
-{ // jaewkim 알아올게
+{
     close(fd);
     FD_CLR(fd, &session.__all);
 }
-
-void Server::send_message(int fd, const char buf[])
-{
-    char *tmp = strcpy(tmp, buf);
-    strcat(tmp, "\r\n");
-    if (send(fd, tmp, strlen(tmp), 0) == -1)
-        return;
-    // send_message(fd, std::string(buf));
-} //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
-    // std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
         return;
-} //좀 정의해야됨
+}
 
 void Server::send_message(Channel *channel, Client *client, std::string text)
 {
@@ -146,18 +131,8 @@ void Server::send_message(Channel *channel, Client *client, std::string text)
     }
 }
 
-void Server::broad_cast(Session &session, char *buf, int fd)
-{
-    for (int i = session.__fd + 1; i <= session.__fd_max; i++)
-    {
-        if (i != fd)
-            send_message(i, buf);
-    }
-}
-
 Server::~Server()
 {
-    // delete __channels;
 }
 
 //   서버 접속 시 패스워드와 같은지 확인해주는 명령어
@@ -197,18 +172,6 @@ Client *Server::findClient(std::string nick)
     }
     return NULL;
 }
-
-// Channel *Server::getChannel(int channel_key)
-//{
-//     std::map<int, Channel>::iterator it = __channels->begin();
-//     while (it != __channels->end())
-//     {
-//         if ((*it).first == channel_key)
-//             return &(*it).second;
-//         ++it;
-//     }
-//     return NULL;
-// }
 
 Channel *Server::findChannel(std::string channel)
 {
@@ -308,8 +271,6 @@ void Server::quit(Client &client)
     std::string announce =
         client.getMessage()->getParamSize() > 0 ? client.getMessage()->combineParameters() : client.getNickname();
 
-    // std::string ret = ":ft_irc QUIT " + client.getNickname();
-    // std::cout << ret << std::endl;
     send_message(client.getSocket(), client.makeReply());
     for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
@@ -425,39 +386,6 @@ void Server::topic(Client &client)
     send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), topic));
 }
 
-void debug(const std::string &msg)
-{
-    std::cerr << "DBG :" << msg << std::endl;
-}
-
-void Server::invite(Client &client) // RPL_AWAY
-{
-    debug("Enter Server::invite()");
-    Message &msg = *(client.getMessage());
-    std::string user = client.getNickname();
-
-    debug("Enter Server::invite() line 422");
-    if (msg.getParameters().size() < 2)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "INVITE"));
-    debug("Enter Server::invite() line 425");
-    std::string nickname = *msg.getParameters().begin();
-    Client *invitee = findClient(nickname);
-    debug("Enter Server::invite() line 427");
-    if (invitee == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
-    debug("Enter Server::invite() line 430");
-    debug(*(++msg.getParameters().begin()));
-    Channel *channel = findChannel(*(++msg.getParameters().begin()));
-    if (channel == NULL)
-        return;
-    debug("Enter Server::invite() line 432");
-    if (channel->isClientInChannel(*invitee) == true)
-        return send_message(client.getSocket(), ERR_USERONCHANNEL(channel->getName(), invitee->getNickname()));
-    debug("Enter Server::invite() line 435");
-    channel->addClient(invitee);
-    debug("Enter Server::invite() line 437");
-    send_message(client.getSocket(), RPL_INVITING(channel->getName(), invitee->getNickname()));
-}
 
 std::vector<std::string> Server::splitPrivmsgTarget(std::string str, char Delimiter)
 {
@@ -608,34 +536,4 @@ void Server::list(Client &client)
                                   std::to_string((*it)->getActiveClients().size()), (*it)->getTopic()));
     }
     send_message(client.getSocket(), RPL_LISTEND(client.getNickname()));
-}
-
-void Server::names(Client &client)
-{
-    //    Message &msg = *(client.getMessage());
-    //    std::string result = "";
-    //    Channel *tmp_ch;
-    //
-    //    if (msg.getParameters().size() == 0)
-    //        return list(client);
-    //    std::vector<std::string>::iterator params = msg.getParameters().begin();
-    //    if ((*params)[0] == '#')
-    //    {
-    //        std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
-    //        std::vector<std::string>::iterator it = channelList.begin();
-    //		std::string a = (*it).substr(1, (*it).length() - 1);
-    //		std::cout << a << std::endl;
-    //		std::cout << "====" << std::endl;
-    //        while (it != channelList.end())
-    //        {
-    //            if ((tmp_ch = findChannel(*it)) != NULL)
-    //            {
-    //				send_message(client.getSocket(), RPL_NAMREPLY(client.getNickname() ,
-    // tmp_ch->listingActiveClient(client)));
-    //            }
-    //			result = RPL_ENDOFNAMES(client.getNickname(), *it);
-    //			send_message(client.getSocket(), result);
-    //			++it;
-    //		}
-    //    }
 }

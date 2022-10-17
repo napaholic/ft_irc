@@ -7,8 +7,7 @@ unsigned long djb2(std::string str)
 {
     unsigned long hash  = 5381;
     unsigned int size   = str.length();
-    unsigned int i      = 0;
-    for (int i = 0; i < size; i++) {
+    for (unsigned int i = 0; i < size; i++) {
         hash = ((hash << 5) + hash) + (str[i]);
     }
     return hash;
