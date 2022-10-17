@@ -415,22 +415,38 @@ void Server::topic(Client &client)
     send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), client.getNickname()));
 }
 
+void debug(const std::string &msg)
+{
+    std::cerr << "DBG :" << msg << std::endl;
+}
+
 void Server::invite(Client &client) // RPL_AWAY
 {
+    debug("Enter Server::invite()");
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
+    debug("Enter Server::invite() line 422");
     if (msg.getParameters().size() < 2)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "INVITE"));
+    debug("Enter Server::invite() line 425");
     std::string nickname = *msg.getParameters().begin();
-    if (findClient(nickname) == NULL)
+    Client *invitee = findClient(nickname);
+    debug("Enter Server::invite() line 427");
+    if (invitee == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
+    debug("Enter Server::invite() line 430");
+    debug(*(++msg.getParameters().begin()));
     Channel *channel = findChannel(*(++msg.getParameters().begin()));
-    if (channel->isClientInChannel(client) == true)
-        return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
-
-    channel->addClient(&client);
-    send_message(client.getSocket(), RPL_INVITING(channel->getName(), nickname));
+    if (channel == NULL)
+        return;
+    debug("Enter Server::invite() line 432");
+    if (channel->isClientInChannel(*invitee) == true)
+        return send_message(client.getSocket(), ERR_USERONCHANNEL(channel->getName(), invitee->getNickname()));
+    debug("Enter Server::invite() line 435");
+    channel->addClient(invitee);
+    debug("Enter Server::invite() line 437");
+    send_message(client.getSocket(), RPL_INVITING(channel->getName(), invitee->getNickname()));
 }
 
 std::vector<std::string> Server::splitPrivmsgTarget(std::string str, char Delimiter)
