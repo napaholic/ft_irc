@@ -22,8 +22,10 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(
+        djb2("NAMES"), &Server::names)); // after everything done, limechat test needed
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(
+        djb2("LIST"), &Server::list)); // after everything done, limechat test needed
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     //  map<long long, class::method>
@@ -117,10 +119,10 @@ void Server::disconnect_client(Session &session, int fd)
 void Server::send_message(int fd, const char buf[])
 {
     char *tmp = strcpy(tmp, buf);
-    strcat(tmp,"\r\n");
+    strcat(tmp, "\r\n");
     if (send(fd, tmp, strlen(tmp), 0) == -1)
         return;
-    //send_message(fd, std::string(buf));
+    // send_message(fd, std::string(buf));
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
@@ -290,7 +292,7 @@ void Server::user(Client &client)
     client.setRealname(*(++(++(++msg.getParameters().begin()))));
     if (client.allowClient())
         send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
-    //send_message(client.getSocket(), ":aaaa 001 a :Welcome to the Internet Relay Network");
+    // send_message(client.getSocket(), ":aaaa 001 a :Welcome to the Internet Relay Network");
 }
 
 void Server::quit(Client &client)
@@ -317,9 +319,7 @@ Channel *Server::createChannel(const std::string &name, Client *client)
 
 void Server::join(Client &client)
 {
-    std::cout << "a";
     Message &msg = *(client.getMessage());
-    std::cout << "b";
 
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
@@ -334,6 +334,7 @@ void Server::join(Client &client)
     }
     else
         channel->addClient(&client);
+    send_message(client.getSocket(), client.makeReply());
     if (channel->getTopic() != "")
         return send_message(client.getSocket(), RPL_TOPIC(channel_name, client.getNickname()));
 }
@@ -543,42 +544,43 @@ void Server::list(Client &client)
     {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
-        //send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
+        // send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
     }
-    else {
-        //for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-          //  send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
+    else
+    {
+        // for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+        //   send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
     }
     send_message(client.getSocket(), RPL_LISTEND);
 }
 void Server::names(Client &client)
 {
-	Message &msg = *(client.getMessage());
-	std::string result = "";
-	Channel *tmp_ch;
-	
-	if (msg.getParameters().size() == 0)
-		return list(client);
-	std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
-	if ((*params)[0] == '#')
-	{
-		std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
-		std::vector<std::string>::iterator it = channelList.begin();
-		while (it != channelList.end())
-		{
-			if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
-			{
-				result += tmp_ch->listingActiveClient(client);
-			}
-			else
-			{
-				result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
-				send_message(client.getSocket(), result);
-				return ;
-			}
-			result += "\n";
-			++it;
-		}
-		send_message(client.getSocket(), RPL_NAMREPLY(result));
-	}
+    Message &msg = *(client.getMessage());
+    std::string result = "";
+    Channel *tmp_ch;
+
+    if (msg.getParameters().size() == 0)
+        return list(client);
+    std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
+    if ((*params)[0] == '#')
+    {
+        std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
+        std::vector<std::string>::iterator it = channelList.begin();
+        while (it != channelList.end())
+        {
+            if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
+            {
+                result += tmp_ch->listingActiveClient(client);
+            }
+            else
+            {
+                result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
+                send_message(client.getSocket(), result);
+                return;
+            }
+            result += "\n";
+            ++it;
+        }
+        send_message(client.getSocket(), RPL_NAMREPLY(result));
+    }
 }
