@@ -31,7 +31,7 @@
 #define ERR_UNKNOWNMODE(user, unknownMode) (":ft_irc 472 " + user + " " + unknownMode + " :is unknown mode char to me")
 
 #define RPL_NAMREPLYTMP(channel, nicks) (channel + " :" + nicks)
-#define RPL_NAMREPLY(lineByLineNamReply) (":ft_irc 353" + lineByLineNamReply)
-#define RPL_ENDOFNAMES(channel) (":ft_irc 366 " + channel + " :End of /NAMES list")
+#define RPL_NAMREPLY(user, lineByLineNamReply) (":ft_irc 353 " + user + " " + lineByLineNamReply)
+#define RPL_ENDOFNAMES(user, channel) (":ft_irc 366 " + user + " " + channel + " :End of /NAMES list")
 
 #endif
