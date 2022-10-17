@@ -18,7 +18,7 @@ public:
 	Session(const std::string &port, const std::string &password);
 	void	check_port(const std::string &port);
 	void	create_socket();
-	void	select_socket();
+	bool	select_socket();
 	~Session();
 private:
 	const std::string	__port;

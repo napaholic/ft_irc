@@ -48,14 +48,15 @@ void	Session::create_socket() {
 	__fd_max = __fd;
 }
 
-void Session::select_socket() {
+bool Session::select_socket() {
 	struct timeval timeout;
 	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 	
 	__reads = __all;
 	if (select(__fd_max + 1, &__reads, 0, 0, &timeout) < 0)
-		throw std::runtime_error("select error");
+		return true;
+	return false;
 }
 
 
