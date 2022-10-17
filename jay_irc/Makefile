@@ -56,4 +56,10 @@ fclean : clean
 
 re : fclean $(NAME)
 
+# Custom rule
+
+leak			: $(NAME)
+			@$(ECHO) "$(YELLOW)Starting memory leak check ...$(NOCOLOR)"
+			@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) 7777 42
+
 .PHONY : all clean fclean re
