@@ -212,6 +212,8 @@ Channel *Server::findChannel(std::string channel)
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
+		std::cout << "channel name is : " << (*it)->getName() << "\n" << std::endl;
+		std::cout << "argument's name is : " << channel << "\n" << std::endl;
         if ((*it)->getName() == channel)
             return (*it);
         ++it;
@@ -327,7 +329,7 @@ void Server::join(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    if (msg.getParameters().size() == 0)
+    if (msg.getParameters()[0] == "#")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "JOIN"));
     std::string channel_name = *msg.getParameters().begin();
     if (channel_name[0] != '#')
@@ -586,26 +588,23 @@ void Server::names(Client &client)
 
     if (msg.getParameters().size() == 0)
         return list(client);
-    std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
+    std::vector<std::string>::iterator params = msg.getParameters().begin();
     if ((*params)[0] == '#')
     {
         std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
         std::vector<std::string>::iterator it = channelList.begin();
+		std::string a = (*it).substr(1, (*it).length() - 1);
+		std::cout << a << std::endl;
+		std::cout << "====" << std::endl;
         while (it != channelList.end())
         {
-            if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
+            if ((tmp_ch = findChannel(*it)) != NULL)
             {
-                result += tmp_ch->listingActiveClient(client);
+				send_message(client.getSocket(), RPL_NAMREPLY(client.getNickname() , tmp_ch->listingActiveClient(client)));
             }
-            else
-            {
-                result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
-                send_message(client.getSocket(), result);
-                return;
-            }
-            result += "\n";
-            ++it;
-        }
-        send_message(client.getSocket(), RPL_NAMREPLY(result));
+			result = RPL_ENDOFNAMES(client.getNickname(), *it);
+			send_message(client.getSocket(), result);
+			++it;
+		}
     }
 }
