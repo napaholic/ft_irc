@@ -276,6 +276,7 @@ void Server::nick(Client &client)
     default:
         break;
     }
+    send_message(client.getSocket(), client.makeReply());
 }
 
 void Server::user(Client &client)
