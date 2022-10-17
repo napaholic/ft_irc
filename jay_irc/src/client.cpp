@@ -113,6 +113,11 @@ void Client::setRealname(const std::string &name)
     __realname = name;
 }
 
+std::string Client::makeReply()
+{
+    return __prefix + std::string(" ") + __message->getRawMessage();
+}
+
 bool operator==(const Client &lhs, const Client &rhs)
 {
     return (lhs.getSocket() == rhs.getSocket()) && (lhs.getNickname() == rhs.getNickname());

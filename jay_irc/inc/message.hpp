@@ -9,6 +9,7 @@ class Message
 {
   private:
     // Memeber variables
+    std::string __raw_message;
     std::string __prefix;
     std::vector<std::string> __parameters;
     unsigned long __command;
@@ -24,6 +25,7 @@ class Message
     const unsigned long &getCommand() const;
     int getParamSize() const;
     const std::string &getPrefix() const;
+    const std::string &getRawMessage() const;
 
     // Others
     const std::string combineParameters();
