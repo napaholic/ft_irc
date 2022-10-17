@@ -322,6 +322,7 @@ void Server::quit(Client &client)
             break;
         }
     }
+    close(client.getSocket());
 }
 
 Channel *Server::createChannel(const std::string &name, Client *client)
