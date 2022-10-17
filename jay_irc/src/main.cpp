@@ -15,12 +15,11 @@ int main(int argc, char **argv)
         Server server(argv[1], argv[2]);
         while (1)
         {
-			if (session.select_socket() == true)
-				continue;
+            session.select_socket();
             server.run(session);
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
