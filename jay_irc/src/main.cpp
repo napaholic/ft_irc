@@ -15,7 +15,8 @@ int main(int argc, char **argv)
         Server server(argv[1], argv[2]);
         while (1)
         {
-            session.select_socket();
+			if (session.select_socket() == true)
+				continue;
             server.run(session);
         }
     }
