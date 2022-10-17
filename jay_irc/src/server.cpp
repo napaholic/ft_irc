@@ -160,11 +160,12 @@ Server::~Server()
 void Server::pass(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (client.getAllowed())
-        return send_message(client.getSocket(), ERR_ALREADYREGISTRED);
+        return send_message(client.getSocket(), ERR_ALREADYREGISTRED(user));
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("PASS"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "PASS"));
     if (*msg.getParameters().begin() == __password)
         client.setAllowed(1);
 }
@@ -258,13 +259,14 @@ void Server::changeNickname(Client &client)
 void Server::nick(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NONICKNAMEGIVEN);
+        return send_message(client.getSocket(), ERR_NONICKNAMEGIVEN(user));
     if (findClient(*(msg.getParameters().begin())) != NULL)
-        return send_message(client.getSocket(), ERR_NICKNAMEINUSE(*(msg.getParameters().begin())));
+        return send_message(client.getSocket(), ERR_NICKNAMEINUSE(user, *(msg.getParameters().begin())));
     if (isErrorNick(*(msg.getParameters().begin())) == true)
-        return send_message(client.getSocket(), ERR_ERRONEUSNICKNAME(*(msg.getParameters().begin())));
+        return send_message(client.getSocket(), ERR_ERRONEUSNICKNAME(user, *(msg.getParameters().begin())));
 
     switch (client.getAllowed())
     {
@@ -282,18 +284,18 @@ void Server::nick(Client &client)
 void Server::user(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (client.getAllowed() == 2)
-        return send_message(client.getSocket(), ERR_ALREADYREGISTRED);
+        return send_message(client.getSocket(), ERR_ALREADYREGISTRED(user));
     if (msg.getParameters().size() < 4)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("USER"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "USER"));
 
     client.setUsername(*msg.getParameters().begin());
     client.setHostname(*(++msg.getParameters().begin()));
     client.setRealname(*(++(++(++msg.getParameters().begin()))));
     if (client.allowClient())
         send_message(client.getSocket(), RPL_WELCOME(client.getNickname()));
-    //send_message(client.getSocket(), ":aaaa 001 a :Welcome to the Internet Relay Network");
 }
 
 void Server::quit(Client &client)
@@ -321,12 +323,13 @@ Channel *Server::createChannel(const std::string &name, Client *client)
 void Server::join(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "JOIN"));
     std::string channel_name = *msg.getParameters().begin();
     if (channel_name[0] != '#')
-        return send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
+        return send_message(client.getSocket(), ERR_BADCHANMASK(user, channel_name));
     Channel *channel = findChannel(channel_name);
     if (channel == NULL)
     {
@@ -337,76 +340,86 @@ void Server::join(Client &client)
         channel->addClient(&client);
     send_message(client.getSocket(), client.makeReply());
     if (channel->getTopic() != "")
-        return send_message(client.getSocket(), RPL_TOPIC(channel_name, client.getNickname()));
+        return send_message(client.getSocket(), RPL_TOPIC(user, channel_name, client.getNickname()));
 }
 
 void Server::part(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("PART"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "PART"));
 
     std::string channel_name = *msg.getParameters().begin();
     Channel *channel = findChannel(channel_name);
     if (channel == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(user, channel_name));
     if (!channel->isClientInChannel(client))
-        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel_name));
     else
+    {
+        send_message(client.getSocket(), client.makeReply());
         channel->eraseClient(&client);
+    }
 }
 
 void Server::kick(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("KICK"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "KICK"));
 
     std::string channel_name = *msg.getParameters().begin();
     Client *targetClient = findClient(*(++msg.getParameters().begin()));
 
     if (channel_name[0] != '#')
-        return send_message(client.getSocket(), ERR_BADCHANMASK(channel_name));
+        return send_message(client.getSocket(), ERR_BADCHANMASK(user, channel_name));
     Channel *channel = findChannel(channel_name);
     if (channel == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(channel_name));
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(user, channel_name));
     if (!channel->isClientInChannel(client))
-        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel_name));
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel_name));
     if (!channel->findOperator(client))
-        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(channel_name));
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(user, channel_name));
     else
+    {
         channel->eraseClient(targetClient);
+    }
 }
 
 void Server::topic(Client &client)
 {
+    std::string user = client.getNickname();
+
     if (client.getMessage()->getParamSize() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("TOPIC"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
     Channel *channel = findChannel(*client.getMessage()->getParameters().begin());
     if (channel->isClientInChannel(client) == 0)
-        return send_message(client.getSocket(), ERR_NOTONCHANNEL(channel->getName()));
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel->getName()));
     if (client.getMessage()->getParamSize() == 1)
-        return send_message(client.getSocket(), RPL_NOTOPIC(channel->getName()));
+        return send_message(client.getSocket(), RPL_NOTOPIC(user, channel->getName()));
     std::string topic = *(++client.getMessage()->getParameters().begin());
     channel->setTopic(topic);
-    send_message(client.getSocket(), RPL_TOPIC(channel->getName(), client.getNickname()));
+    send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), client.getNickname()));
 }
 
 void Server::invite(Client &client) // RPL_AWAY
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (msg.getParameters().size() < 2)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("INVITE"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "INVITE"));
     std::string nickname = *msg.getParameters().begin();
     if (findClient(nickname) == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHNICK(nickname));
+        return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
     Channel *channel = findChannel(*(++msg.getParameters().begin()));
     // I think it should be changed that inviter is operator of the channel.
     // if (findClient(nickname) == NULL)
-    //     return send_message(__port_int, ERR_NOTONCHANNEL(nickname));
+    //     return send_message(__port_int, ERR_NOTONCHANNEL(user, nickname));
     if (channel->isClientInChannel(client) == true)
         return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
 
@@ -436,10 +449,12 @@ std::vector<std::string> Server::splitPrivmsgTarget(std::string str, char Delimi
 void Server::privmsg(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
+
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NORECIPIENT("PRIVMSG"));
+        return send_message(client.getSocket(), ERR_NORECIPIENT(user, "PRIVMSG"));
     if (msg.getParameters().size() == 1)
-        return send_message(client.getSocket(), ERR_NOTEXTTOSEND);
+        return send_message(client.getSocket(), ERR_NOTEXTTOSEND(user));
 
     std::vector<std::string> targets = splitPrivmsgTarget(*msg.getParameters().begin(), ',');
     std::string text = *(++msg.getParameters().begin());
@@ -451,7 +466,7 @@ void Server::privmsg(Client &client)
         {
             if (findChannel(target) == 0)
             {
-                send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+                send_message(client.getSocket(), ERR_NOSUCHCHANNEL(user, target));
                 continue;
             }
             send_message(findChannel(target), &client, client.makeReply());
@@ -460,7 +475,7 @@ void Server::privmsg(Client &client)
         {
             if (findClient(target) == 0)
             {
-                send_message(client.getSocket(), ERR_NOSUCHNICK(target));
+                send_message(client.getSocket(), ERR_NOSUCHNICK(user, target));
                 continue;
             }
             send_message(findClient(target)->getSocket(), client.makeReply());
@@ -502,13 +517,14 @@ void Server::modeChannel(std::string target, Client &client, std::vector<std::st
     Channel *channel = findChannel(target);
     std::string option_o = *(++param);
     std::string nickName = *(++(++param));
+    std::string user = client.getNickname();
 
     if (channel == NULL)
-        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(target));
+        return send_message(client.getSocket(), ERR_NOSUCHCHANNEL(user, target));
     if (channel->findOperator(client) == false)
-        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(target));
+        return send_message(client.getSocket(), ERR_CHANOPRIVSNEEDED(user, target));
     if (channel->findClient(nickName) == NULL)
-        return send_message(client.getSocket(), ERR_NOTONCHANNEL(nickName));
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, nickName));
 
     if (option_o == "+o")
     {
@@ -519,15 +535,17 @@ void Server::modeChannel(std::string target, Client &client, std::vector<std::st
         channel->delOperator(channel->findClient(nickName));
     }
     else
-        return send_message(client.getSocket(), ERR_UNKNOWNMODE(option_o));
+        return send_message(client.getSocket(), ERR_UNKNOWNMODE(user, option_o));
 }
 
 void Server::mode(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
+
 
     if (msg.getParameters().size() == 0)
-        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("MODE"));
+        return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "MODE"));
 
     std::string target = *msg.getParameters().begin();
     if (target[0] == '#')
@@ -537,6 +555,7 @@ void Server::mode(Client &client)
 void Server::list(Client &client)
 {
     Message &msg = *(client.getMessage());
+    std::string user = client.getNickname();
 
     if (__channels.size() == 0)
         ;
