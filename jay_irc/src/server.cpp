@@ -78,6 +78,8 @@ void Server::receive_message(Session &session, int fd)
             return;
         disconnect_client(session, fd);
     }
+    else if (size < 3) // Only "\n" in buffer
+        return;
     else //커맨드에 따른 동작수행
     {
         tmp_client = findClient(fd);
