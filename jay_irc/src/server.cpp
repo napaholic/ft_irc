@@ -13,7 +13,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
+    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"),
+    //&Server::invite));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
@@ -21,7 +22,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));
+    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"),
+    //&Server::names));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
@@ -304,22 +306,22 @@ void Server::quit(Client &client)
     std::string announce =
         client.getMessage()->getParamSize() > 0 ? client.getMessage()->combineParameters() : client.getNickname();
 
-    //std::string ret = ":ft_irc QUIT " + client.getNickname();
-    //std::cout << ret << std::endl;
+    // std::string ret = ":ft_irc QUIT " + client.getNickname();
+    // std::cout << ret << std::endl;
     send_message(client.getSocket(), client.makeReply());
     for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
-        std::cout << "316" << std::endl;
         if ((*it)->isClientInChannel(client))
             (*it)->eraseClient(&client);
     }
     for (std::set<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
     {
-        std::cout << "322" << std::endl;
         if (**it == client)
-            __clients.erase(*it);
+        {
+            __clients.erase(it);
+            break;
+        }
     }
-    close(client.getSocket());
 }
 
 Channel *Server::createChannel(const std::string &name, Client *client)
@@ -409,8 +411,8 @@ void Server::topic(Client &client)
     if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
     Channel *channel = findChannel(*msg.getParameters().begin());
-	if (channel == NULL)
-		return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, *msg.getParameters().begin()));
+    if (channel == NULL)
+        return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, *msg.getParameters().begin()));
     if (channel->isClientInChannel(client) == false)
         return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel->getName()));
     if (msg.getParamSize() == 1)
@@ -626,7 +628,7 @@ void Server::names(Client &client)
     //            if ((tmp_ch = findChannel(*it)) != NULL)
     //            {
     //				send_message(client.getSocket(), RPL_NAMREPLY(client.getNickname() ,
-    //tmp_ch->listingActiveClient(client)));
+    // tmp_ch->listingActiveClient(client)));
     //            }
     //			result = RPL_ENDOFNAMES(client.getNickname(), *it);
     //			send_message(client.getSocket(), result);
