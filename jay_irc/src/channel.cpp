@@ -3,7 +3,8 @@
 //
 #include "../inc/channel.hpp"
 
-Channel::Channel(const std::string &name, Client *oper) : __name(name), __topic(""), __mode(0), __key(""), __hostClient(*oper)
+Channel::Channel(const std::string &name, Client *oper)
+    : __name(name), __topic(""), __mode(0), __key(""), __hostClient(*oper)
 {
     addClient(oper);
     // setPermissions(oper, opt_o);
@@ -18,7 +19,7 @@ void Channel::addClient(Client *client)
     if (isClientInChannel(*client) == false)
         __active_clients.insert(__active_clients.begin(), client);
     else
-        std::cout << "Could not add client\n";
+        std::cout << "Could not add client: Client is already in channel.\n";
 }
 
 void Channel::eraseClient(Client *client)
@@ -169,23 +170,23 @@ bool Channel::findOperator(const Client &client) const
     return false;
 }
 
-std::string	Channel::listingActiveClient(Client &client) const
+std::string Channel::listingActiveClient(Client &client) const
 {
-	std::string str = "";
-	std::set<Client *>::iterator it = __active_clients.begin();
-	while (it != __active_clients.end())
-	{
-		if ((**it) == client)
-		{
-			str = str + " @" + (*it)->getNickname();
-		}
-		else
-		{
-			str = str + " " + (*it)->getNickname();
-		}
-		++it;
-	}
-	return RPL_NAMREPLYTMP(this->getName(), str);
+    std::string str = "";
+    std::set<Client *>::iterator it = __active_clients.begin();
+    while (it != __active_clients.end())
+    {
+        if ((**it) == client)
+        {
+            str = str + " @" + (*it)->getNickname();
+        }
+        else
+        {
+            str = str + " " + (*it)->getNickname();
+        }
+        ++it;
+    }
+    return RPL_NAMREPLYTMP(this->getName(), str);
 }
 
 // Need to fix add_del operator has Client * parameter.
