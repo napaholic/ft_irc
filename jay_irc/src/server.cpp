@@ -127,15 +127,16 @@ void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
-     //std::cout << buf << std::endl;
+    // std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
         return;
 } //좀 정의해야됨
 
-void Server::send_message(Channel *channel, Client *client,  std::string text)
+void Server::send_message(Channel *channel, Client *client, std::string text)
 {
     for (std::set<Client *>::iterator it = channel->getActiveClients().begin(); it != channel->getActiveClients().end();
-         ++it) {
+         ++it)
+    {
         if (findClient((*it)->getSocket()) == client)
             continue;
         send_message((*it)->getSocket(), text);
@@ -268,6 +269,7 @@ void Server::nick(Client &client)
     if (isErrorNick(*(msg.getParameters().begin())) == true)
         return send_message(client.getSocket(), ERR_ERRONEUSNICKNAME(user, *(msg.getParameters().begin())));
 
+    send_message(client.getSocket(), client.makeReply());
     switch (client.getAllowed())
     {
     case 1:
@@ -417,9 +419,6 @@ void Server::invite(Client &client) // RPL_AWAY
     if (findClient(nickname) == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
     Channel *channel = findChannel(*(++msg.getParameters().begin()));
-    // I think it should be changed that inviter is operator of the channel.
-    // if (findClient(nickname) == NULL)
-    //     return send_message(__port_int, ERR_NOTONCHANNEL(user, nickname));
     if (channel->isClientInChannel(client) == true)
         return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
 
@@ -543,7 +542,6 @@ void Server::mode(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "MODE"));
 
@@ -559,16 +557,21 @@ void Server::list(Client &client)
 
     if (__channels.size() == 0)
         ;
-    else if (msg.getParameters().size() == 1) {
+    else if (msg.getParameters().size() == 1)
+    {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
         send_message(client.getSocket(),
-                     RPL_LIST(client.getNickname(), channel->getName(), std::to_string(channel->getActiveClients().size()), channel->getTopic()));
+                     RPL_LIST(client.getNickname(), channel->getName(),
+                              std::to_string(channel->getActiveClients().size()), channel->getTopic()));
     }
 
-    else {
+    else
+    {
         for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-            send_message(client.getSocket(), RPL_LIST(client.getNickname(), (*it)->getName(), std::to_string((*it)->getActiveClients().size()), (*it)->getTopic()));
+            send_message(client.getSocket(),
+                         RPL_LIST(client.getNickname(), (*it)->getName(),
+                                  std::to_string((*it)->getActiveClients().size()), (*it)->getTopic()));
     }
     send_message(client.getSocket(), RPL_LISTEND(client.getNickname()));
 }
