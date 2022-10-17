@@ -24,7 +24,6 @@ class Channel
     std::set<Client *> __operator_list;
     std::set<Client *> __active_clients;
 	Client &__hostClient;
-    // std::vector<std::string &> __banned;
     unsigned char __mode;
     std::string __key;
 
@@ -43,12 +42,9 @@ class Channel
 
     // Modifiers
     void setMode(unsigned char mode);
-    void setKey(std::string const &key);
 
     void addClient(Client *client);
     void eraseClient(Client *client);
-    //void addBanned(const std::string &nick);
-    //void eraseBanned(const std::string &nick);
 
     // Lookups
     Client      *findClient(std::string nick);
@@ -58,15 +54,6 @@ class Channel
 
     // Identifiers
     bool isClientInChannel(const Client &client);
-    // bool isBanned(const std::string &nick);
-
-    // Others
-    //unsigned char get_permissions(const std::string &nick);
-
-    //void setPermissions(Client *client, unsigned char perm);
-
-    //void printChannel();
-    // std::string	sendUserList(std::string serverip, std::string nick);
 
     void addOperator(Client *client);
     void delOperator(Client *client);

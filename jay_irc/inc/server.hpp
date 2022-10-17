@@ -74,10 +74,8 @@ class Server
     void accept_client(Session &session);
     void receive_message(Session &session, int fd);
     void disconnect_client(Session &session, int fd);
-    void send_message(int fd, const char buf[]);
     void send_message(int fd, std::string str);
     void send_message(Channel *channel, Client *client, std::string text);
-    void broad_cast(Session &session, char *buf, int fd);
 };
 
 #endif // JAY_IRC_SERVER_H
