@@ -7,8 +7,8 @@
 #define RPL_TOPIC(channel, topic) (":ft_irc 332 " + channel + " :" + topic)
 #define RPL_INVITING(channel, nick) (":ft_irc 341 " + channel + " " + nick)
 #define RPL_LISTSTART ":ft_irc 321 Channel :Users  Name"
-#define RPL_LIST(nick, channel, members, topic) (":ft_irc 322 " + nick + " " + channel + " " + members + " :" + topic)
-#define RPL_LISTEND ":ft_irc 323 :End of LIST"
+#define RPL_LIST(user, channel, members, topic) (":ft_irc 322 " + user + " " + channel + " " + members + " :" + topic)
+#define RPL_LISTEND(user) (":ft_irc 323 "+ user + "  :End of LIST")
 
 #define ERR_NOSUCHNICK(nick) (":ft_irc 401 " + nick + " :No such nick")
 #define ERR_NOSUCHCHANNEL(channel) (":ft_irc 403 " + channel + " :No such channel/channel")

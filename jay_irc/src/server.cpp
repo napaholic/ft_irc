@@ -533,7 +533,6 @@ void Server::mode(Client &client)
 
 void Server::list(Client &client)
 {
-    send_message(client.getSocket(), RPL_LISTSTART);
     Message &msg = *(client.getMessage());
 
     if (__channels.size() == 0)
@@ -542,14 +541,14 @@ void Server::list(Client &client)
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
         send_message(client.getSocket(),
-                     RPL_LIST(client.getNickname(), channel->getName(), std::to_string(channel->getActiveClients().size()), channel->getTopic());
+                     RPL_LIST(client.getNickname(), channel->getName(), std::to_string(channel->getActiveClients().size()), channel->getTopic()));
     }
 
-        else {
+    else {
         for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
             send_message(client.getSocket(), RPL_LIST(client.getNickname(), (*it)->getName(), std::to_string((*it)->getActiveClients().size()), (*it)->getTopic()));
     }
-    send_message(client.getSocket(), RPL_LISTEND);
+    send_message(client.getSocket(), RPL_LISTEND(client.getNickname()));
 }
 
 void Server::names(Client &client)
