@@ -59,6 +59,7 @@ class Client
     // others (unknown)
     void make_prefix();
     int allowClient();
+    std::string makeReply();
 };
 
 // Non-member functions

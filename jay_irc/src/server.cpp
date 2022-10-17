@@ -116,12 +116,11 @@ void Server::disconnect_client(Session &session, int fd)
 
 void Server::send_message(int fd, const char buf[])
 {
-//    char *tmp = strcpy(tmp, buf);
-//    strcat(tmp,"\r\n");
-//    if (send(fd, tmp, strlen(tmp), 0) == -1)
-//        return;
-//    std::cout << buf << std::endl;
-    send_message(fd, std::string(buf));
+    char *tmp = strcpy(tmp, buf);
+    strcat(tmp, "\r\n");
+    if (send(fd, tmp, strlen(tmp), 0) == -1)
+        return;
+    // send_message(fd, std::string(buf));
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
@@ -318,9 +317,7 @@ Channel *Server::createChannel(const std::string &name, Client *client)
 
 void Server::join(Client &client)
 {
-    std::cout << "a";
     Message &msg = *(client.getMessage());
-    std::cout << "b";
 
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS("JOIN"));
@@ -335,6 +332,7 @@ void Server::join(Client &client)
     }
     else
         channel->addClient(&client);
+    send_message(client.getSocket(), client.makeReply());
     if (channel->getTopic() != "")
         return send_message(client.getSocket(), RPL_TOPIC(channel_name, client.getNickname()));
 }
@@ -462,7 +460,6 @@ void Server::privmsg(Client &client)
                 send_message(client.getSocket(), ERR_NOSUCHNICK(target));
                 continue;
             }
-            std::cout << "fd: "<< findClient(target)->getSocket() << std::endl;
             send_message(findClient(target)->getSocket(), text);
         }
     }
@@ -536,6 +533,7 @@ void Server::mode(Client &client)
 
 void Server::list(Client &client)
 {
+    send_message(client.getSocket(), RPL_LISTSTART);
     Message &msg = *(client.getMessage());
 
     if (__channels.size() == 0)
@@ -556,32 +554,32 @@ void Server::list(Client &client)
 
 void Server::names(Client &client)
 {
-	Message &msg = *(client.getMessage());
-	std::string result = "";
-	Channel *tmp_ch;
-	
-	if (msg.getParameters().size() == 0)
-		return list(client);
-	std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
-	if ((*params)[0] == '#')
-	{
-		std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
-		std::vector<std::string>::iterator it = channelList.begin();
-		while (it != channelList.end())
-		{
-			if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
-			{
-				result += tmp_ch->listingActiveClient(client);
-			}
-			else
-			{
-				result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
-				send_message(client.getSocket(), result);
-				return ;
-			}
-			result += "\n";
-			++it;
-		}
-		send_message(client.getSocket(), RPL_NAMREPLY(result));
-	}
+    Message &msg = *(client.getMessage());
+    std::string result = "";
+    Channel *tmp_ch;
+
+    if (msg.getParameters().size() == 0)
+        return list(client);
+    std::vector<std::string>::iterator params = ++(msg.getParameters().begin());
+    if ((*params)[0] == '#')
+    {
+        std::vector<std::string> channelList = splitPrivmsgTarget(*params, ',');
+        std::vector<std::string>::iterator it = channelList.begin();
+        while (it != channelList.end())
+        {
+            if ((tmp_ch = findChannel((*it).substr((*it)[1], (*it).length()))) != NULL)
+            {
+                result += tmp_ch->listingActiveClient(client);
+            }
+            else
+            {
+                result = RPL_ENDOFNAMES((*it).substr((*it)[1], (*it).length()));
+                send_message(client.getSocket(), result);
+                return;
+            }
+            result += "\n";
+            ++it;
+        }
+        send_message(client.getSocket(), RPL_NAMREPLY(result));
+    }
 }

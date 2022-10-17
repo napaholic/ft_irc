@@ -2,6 +2,8 @@
 
 Message::Message(char *buf)
 {
+    __raw_message = buf;
+
     std::string s;
     std::stringstream ss((std::string(buf)));
 
@@ -56,4 +58,9 @@ int Message::getParamSize() const
 const std::string &Message::getPrefix() const
 {
     return __prefix;
+}
+
+const std::string &Message::getRawMessage() const
+{
+    return __raw_message;
 }
