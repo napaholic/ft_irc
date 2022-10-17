@@ -8,7 +8,7 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
 {
     __port_int = std::atoi(port.c_str());
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NICK"), &Server::nick));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("QUIT"), &Server::quit));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("QUIT"), &Server::quit));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PASS"), &Server::pass));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
@@ -308,12 +308,21 @@ void Server::quit(Client &client)
     std::string announce =
         client.getMessage()->getParamSize() > 0 ? client.getMessage()->combineParameters() : client.getNickname();
 
+    //std::string ret = ":ft_irc QUIT " + client.getNickname();
+    //std::cout << ret << std::endl;
+    send_message(client.getSocket(), client.makeReply());
     for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
     {
+        std::cout << "316" << std::endl;
         if ((*it)->isClientInChannel(client))
             (*it)->eraseClient(&client);
     }
-    send_message(__port_int, announce);
+    for (std::set<Client *>::iterator it = __clients.begin(); it != __clients.end(); ++it)
+    {
+        std::cout << "322" << std::endl;
+        if (**it == client)
+            __clients.erase(*it);
+    }
     close(client.getSocket());
 }
 
