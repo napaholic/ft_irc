@@ -419,9 +419,6 @@ void Server::invite(Client &client) // RPL_AWAY
     if (findClient(nickname) == NULL)
         return send_message(client.getSocket(), ERR_NOSUCHNICK(user, nickname));
     Channel *channel = findChannel(*(++msg.getParameters().begin()));
-    // I think it should be changed that inviter is operator of the channel.
-    // if (findClient(nickname) == NULL)
-    //     return send_message(__port_int, ERR_NOTONCHANNEL(user, nickname));
     if (channel->isClientInChannel(client) == true)
         return send_message(__port_int, ERR_USERONCHANNEL(nickname, channel->getName()));
 
