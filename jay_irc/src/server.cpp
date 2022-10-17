@@ -13,8 +13,7 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("JOIN"), &Server::join));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("USER"), &Server::user));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("TOPIC"), &Server::topic));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"),
-    //&Server::invite));
+    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("INVITE"), &Server::invite));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("MODE"), &Server::mode));
     __cmd_list.insert(
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PRIVMSG"), &Server::privmsg));
@@ -22,8 +21,7 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"),
-    //&Server::names));
+    //__cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
@@ -213,8 +211,6 @@ Channel *Server::findChannel(std::string channel)
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
-        // std::cout << "channel name is : " << (*it)->getName() << "\n" << std::endl;
-        // std::cout << "argument's name is : " << channel << "\n" << std::endl;
         if ((*it)->getName() == channel)
             return (*it);
         ++it;
@@ -404,13 +400,15 @@ void Server::topic(Client &client)
     if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
     Channel *channel = findChannel(*msg.getParameters().begin());
-    if (channel->isClientInChannel(client) == 0)
+	if (channel == NULL)
+		return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, *msg.getParameters().begin()));
+    if (channel->isClientInChannel(client) == false)
         return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel->getName()));
     if (msg.getParamSize() == 1)
         return send_message(client.getSocket(), RPL_NOTOPIC(user, channel->getName()));
-    std::string topic = *(++msg.getParameters().begin());
+    std::string topic = msg.combineParameters();
     channel->setTopic(topic);
-    send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), client.getNickname()));
+    send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), topic));
 }
 
 void debug(const std::string &msg)
