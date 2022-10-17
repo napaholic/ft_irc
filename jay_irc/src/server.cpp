@@ -22,8 +22,8 @@ Server::Server(const std::string &port, const std::string &password) : __port(po
         std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NOTICE"), &Server::notice));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("PART"), &Server::part));
     __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("KICK"), &Server::kick));
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));//after everything done, limechat test needed
-    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));//after everything done, limechat test needed
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("NAMES"), &Server::names));
+    __cmd_list.insert(std::make_pair<unsigned long, void (Server::*)(Client & client)>(djb2("LIST"), &Server::list));
 
     // hash 맵 key는 string 해쉬값, value는 함수포인터 주소. 인자는 패러미터 string
     //  map<long long, class::method>
@@ -116,18 +116,19 @@ void Server::disconnect_client(Session &session, int fd)
 
 void Server::send_message(int fd, const char buf[])
 {
-    char *tmp = strcpy(tmp, buf);
-    strcat(tmp,"\r\n");
-    if (send(fd, tmp, strlen(tmp), 0) == -1)
-        return;
-    //send_message(fd, std::string(buf));
+//    char *tmp = strcpy(tmp, buf);
+//    strcat(tmp,"\r\n");
+//    if (send(fd, tmp, strlen(tmp), 0) == -1)
+//        return;
+//    std::cout << buf << std::endl;
+    send_message(fd, std::string(buf));
 } //좀 정의해야됨
 
 void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
-    // std::cout << buf << std::endl;
+     //std::cout << buf << std::endl;
     if (send(fd, buf, strlen(buf), 0) == -1)
         return;
 } //좀 정의해야됨
@@ -461,6 +462,7 @@ void Server::privmsg(Client &client)
                 send_message(client.getSocket(), ERR_NOSUCHNICK(target));
                 continue;
             }
+            std::cout << "fd: "<< findClient(target)->getSocket() << std::endl;
             send_message(findClient(target)->getSocket(), text);
         }
     }
@@ -534,7 +536,6 @@ void Server::mode(Client &client)
 
 void Server::list(Client &client)
 {
-    send_message(client.getSocket(), RPL_LISTSTART);
     Message &msg = *(client.getMessage());
 
     if (__channels.size() == 0)
@@ -543,7 +544,7 @@ void Server::list(Client &client)
     {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
-        //send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
+        send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
     }
     else {
         //for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
@@ -551,6 +552,7 @@ void Server::list(Client &client)
     }
     send_message(client.getSocket(), RPL_LISTEND);
 }
+
 void Server::names(Client &client)
 {
 	Message &msg = *(client.getMessage());
