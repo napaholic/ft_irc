@@ -351,10 +351,6 @@ void Server::part(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    //std::cout << "line 355 " << msg.getParameters().size() << std::endl;
-    //std::cout << "line 356 " << *(msg.getParameters().begin())  << "end" << std::endl;
-    //std::cout << "line 357 " << std::endl;
-    //if (msg.getParameters().size() == 0)
     if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "PART"));
 
@@ -376,9 +372,7 @@ void Server::kick(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    std::cout << "line 375 " << msg.getParameters().size() << std::endl;
-    //if (msg.getParameters().size() == 0)
-    if (msg.getParameters()[0] == "")
+    if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "KICK"));
 
     std::string channel_name = *msg.getParameters().begin();
@@ -401,16 +395,17 @@ void Server::kick(Client &client)
 
 void Server::topic(Client &client)
 {
+    Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    if (client.getMessage()->getParamSize() == 0)
+    if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
-    Channel *channel = findChannel(*client.getMessage()->getParameters().begin());
+    Channel *channel = findChannel(*msg.getParameters().begin());
     if (channel->isClientInChannel(client) == 0)
         return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel->getName()));
-    if (client.getMessage()->getParamSize() == 1)
+    if (msg.getParamSize() == 1)
         return send_message(client.getSocket(), RPL_NOTOPIC(user, channel->getName()));
-    std::string topic = *(++client.getMessage()->getParameters().begin());
+    std::string topic = *(++msg.getParameters().begin());
     channel->setTopic(topic);
     send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), client.getNickname()));
 }
