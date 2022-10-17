@@ -19,7 +19,7 @@ ECHO		= echo
 
 NAME		=	ircserv
 CXX			=	c++
-CXXFLAGS	=	-g -std=c++98
+CXXFLAGS	=   -std=c++98 -Wall -Wextra -Werror
 RM			=	rm
 RMFLAGS		=	-rf
 

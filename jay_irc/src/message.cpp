@@ -41,7 +41,7 @@ const unsigned long &Message::getCommand() const
 const std::string Message::combineParameters()
 {
     std::string combinedParam;
-    for (std::vector<std::string>::iterator it = __parameters.begin(); it != __parameters.end(); ++it)
+    for (std::vector<std::string>::iterator it = ++__parameters.begin(); it != __parameters.end(); ++it)
     {
         combinedParam += (*it);
         if (it != --__parameters.end())
