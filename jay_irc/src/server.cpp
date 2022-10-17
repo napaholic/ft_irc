@@ -211,10 +211,10 @@ Channel *Server::findChannel(std::string channel)
     std::set<Channel *>::iterator it = __channels.begin();
     while (it != __channels.end())
     {
-		//std::cout << "channel name is : " << (*it)->getName() << "\n" << std::endl;
-		//std::cout << "argument's name is : " << channel << "\n" << std::endl;
         if ((*it)->getName() == channel)
-            return (*it);
+		{
+			return (*it);
+		}
         ++it;
     }
     return NULL;
@@ -398,16 +398,18 @@ void Server::topic(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    if (msg.getParameters()[0] == ":")
+    if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
     Channel *channel = findChannel(*msg.getParameters().begin());
-    if (channel->isClientInChannel(client) == 0)
+	if (channel == NULL)
+		return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, *msg.getParameters().begin()));
+    if (channel->isClientInChannel(client) == false)
         return send_message(client.getSocket(), ERR_NOTONCHANNEL(user, channel->getName()));
     if (msg.getParamSize() == 1)
         return send_message(client.getSocket(), RPL_NOTOPIC(user, channel->getName()));
-    std::string topic = *(++msg.getParameters().begin());
+    std::string topic = msg.combineParameters();
     channel->setTopic(topic);
-    send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), client.getNickname()));
+    send_message(client.getSocket(), RPL_TOPIC(user, channel->getName(), topic));
 }
 
 void debug(const std::string &msg)
