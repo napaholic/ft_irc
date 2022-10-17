@@ -350,6 +350,7 @@ void Server::part(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
+    std::cout << "line 353 " << msg.getParameters().size() << std::endl;
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "PART"));
 
@@ -371,6 +372,7 @@ void Server::kick(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
+    std::cout << "line 375 " << msg.getParameters().size() << std::endl;
     if (msg.getParameters().size() == 0)
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "KICK"));
 
