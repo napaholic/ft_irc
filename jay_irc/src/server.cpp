@@ -397,7 +397,7 @@ void Server::topic(Client &client)
     Message &msg = *(client.getMessage());
     std::string user = client.getNickname();
 
-    if (msg.getParameters().size() == 0)
+    if (msg.getParameters()[0] == ":")
         return send_message(client.getSocket(), ERR_NEEDMOREPARAMS(user, "TOPIC"));
     Channel *channel = findChannel(*msg.getParameters().begin());
 	if (channel == NULL)
