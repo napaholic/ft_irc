@@ -127,11 +127,7 @@ void Server::send_message(int fd, std::string str)
 {
     str.append("\r\n");
     char *buf = const_cast<char *>(str.c_str());
-<<<<<<< HEAD
-	std::cout << buf << std::endl;
-=======
     // std::cout << buf << std::endl;
->>>>>>> b670a99899ee013fb1f2953d8c68efca80a31ed1
     if (send(fd, buf, strlen(buf), 0) == -1)
         return;
 } //좀 정의해야됨
