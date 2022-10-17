@@ -540,15 +540,16 @@ void Server::list(Client &client)
 
     if (__channels.size() == 0)
         ;
-    else if (msg.getParameters().size() == 1)
-    {
+    else if (msg.getParameters().size() == 1) {
         std::string target = *msg.getParameters().begin();
         Channel *channel = findChannel(target);
-        send_message(client.getSocket(), RPL_LIST(channel->getName(), channel->getTopic()));
+        send_message(client.getSocket(),
+                     RPL_LIST(client.getNickname(), channel->getName(), std::to_string(channel->getActiveClients().size()), channel->getTopic());
     }
-    else {
-        //for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
-          //  send_message(client.getSocket(), RPL_LIST((*it)->getName(), (*it)->getTopic()));
+
+        else {
+        for (std::set<Channel *>::iterator it = __channels.begin(); it != __channels.end(); ++it)
+            send_message(client.getSocket(), RPL_LIST(client.getNickname(), (*it)->getName(), std::to_string((*it)->getActiveClients().size()), (*it)->getTopic()));
     }
     send_message(client.getSocket(), RPL_LISTEND);
 }
